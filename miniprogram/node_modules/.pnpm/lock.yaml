@@ -1,0 +1,62 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      '@vant/weapp':
+        specifier: ^1.11.7
+        version: 1.11.7
+      echarts:
+        specifier: ^5.6.0
+        version: 5.6.0
+      echarts-stat:
+        specifier: ^1.2.0
+        version: 1.2.0
+    devDependencies:
+      miniprogram-api-typings:
+        specifier: ^2.8.3-1
+        version: 2.12.0
+
+packages:
+
+  '@vant/weapp@1.11.7':
+    resolution: {integrity: sha512-Rwn9BBnb4kHSV4XmvBicwtd42J+amEUfnFDcXJsGNPNX4a9c/DoT6YLsm4X1wB2+sQbdiQsbFBLAvGRBxCkD8g==}
+
+  echarts-stat@1.2.0:
+    resolution: {integrity: sha512-zLd7Kgs+tuTSeaK0VQEMNmnMivEkhvHIk1gpBtLzpRerfcIQ+Bd5XudOMmtwpaTc1WDZbA7d1V//iiBccR46Qg==}
+
+  echarts@5.6.0:
+    resolution: {integrity: sha512-oTbVTsXfKuEhxftHqL5xprgLoc0k7uScAwtryCgWF6hPYFLRwOUHiFmHGCBKP5NPFNkDVopOieyUqYGH8Fa3kA==}
+
+  miniprogram-api-typings@2.12.0:
+    resolution: {integrity: sha512-ibvbqeslVFur0IAvTxLMvsbtvVcMo6gwvOnj0YZHV7aeDLu091VQRrETT2QuiG9P6aZWRcxeNGJChRKVPCp9VQ==}
+
+  tslib@2.3.0:
+    resolution: {integrity: sha512-N82ooyxVNm6h1riLCoyS9e3fuJ3AMG2zIZs2Gd1ATcSFjSA23Q0fzjjZeh0jbJvWVDZ0cJT8yaNNaaXHzueNjg==}
+
+  zrender@5.6.1:
+    resolution: {integrity: sha512-OFXkDJKcrlx5su2XbzJvj/34Q3m6PvyCZkVPHGYpcCJ52ek4U/ymZyfuV1nKE23AyBJ51E/6Yr0mhZ7xGTO4ag==}
+
+snapshots:
+
+  '@vant/weapp@1.11.7': {}
+
+  echarts-stat@1.2.0: {}
+
+  echarts@5.6.0:
+    dependencies:
+      tslib: 2.3.0
+      zrender: 5.6.1
+
+  miniprogram-api-typings@2.12.0: {}
+
+  tslib@2.3.0: {}
+
+  zrender@5.6.1:
+    dependencies:
+      tslib: 2.3.0

@@ -1,0 +1,25 @@
+<!--pages/drawer/index.wxml-->
+
+<navigation-bar title="画布" back="{{true}}"></navigation-bar>
+ <scroll-view scroll-y="{{true}}" style="height: 50px;"
+    padding="[10, 10, 10, 10]"
+ wx:if="files" >
+    <view  wx:for="{{files}}" wx:key="{{item.tempFilePath}}"
+    class="img-item {{index === selectedIndex ? 'selected' : ''}}"
+    bind:tap="handleSelect(item, index)"
+    >
+        <image class="img" src="{{item.tempFilePath}}" />
+    </view>
+ </scroll-view>
+<ec-canvas class="canvas" 
+ec="{{ ec }}"
+type="2d" />
+<view active class="footer">
+    <view class="footer_left">
+        <van-button type="primary">修改浓度</van-button>
+    </view>
+    <view class="footer_right">
+        <van-button plain>上一张</van-button>
+        <van-button plain type="primary">下一张</van-button>
+    </view>
+</view>

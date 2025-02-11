@@ -1,0 +1,5 @@
+<!--index.wxml-->
+<navigation-bar title="角动量测量" back="{{false}}" color="black" background="#FFF"></navigation-bar>
+<scroll-view class="scrollarea" scroll-y type="list">
+  <van-button bind:tap="handleSelect" type="primary">从相册选择图片</van-button>
+</scroll-view>

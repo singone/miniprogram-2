@@ -1,0 +1,45 @@
+/* pages/drawer/index.wxss */
+page{
+    display: flex;
+    flex-direction: column;
+}
+.canvas{
+    flex: 1;
+}
+
+.img-item{
+    border: 2px solid transparent;
+    width: 50px;
+    margin-left: 12px;
+    padding: 3px;
+    box-sizing: border-box;
+}
+.img-item.selected{
+    border-color: var(--drawer-color-primary);
+}
+.img{
+    width: 40px;
+    height: 40px;
+}
+
+.footer{
+    display: flex;
+    padding:  12px;
+    margin-top: 12px;
+    box-shadow: 0 -4px 4px #eee;
+}
+.footer_left{
+    flex: 1;
+}
+.footer_right{
+    display: flex;
+}
+.footer_right .van-button{
+    flex: 1;
+    margin-left: 8px;
+    width: auto;
+}
+.content{
+    flex: 1;
+
+}
