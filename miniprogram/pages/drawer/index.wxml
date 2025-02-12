@@ -13,6 +13,7 @@
  </scroll-view>
 <ec-canvas class="canvas" 
 ec="{{ ec }}"
+id="draw-com"
 type="2d" />
 <view active class="footer">
     <view class="footer_left">

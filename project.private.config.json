@@ -3,5 +3,18 @@
   "projectname": "miniprogram-2",
   "setting": {
     "compileHotReLoad": true
+  },
+  "condition": {
+    "miniprogram": {
+      "list": [
+        {
+          "name": "pages/drawer/index",
+          "pathName": "pages/drawer/index",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        }
+      ]
+    }
   }
 }

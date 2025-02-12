@@ -1,5 +1,5 @@
 import WxCanvas from './wx-canvas';
-import * as echarts from './echarts';
+import * as echarts from 'echarts';
 
 let ctx;
 
@@ -78,7 +78,7 @@ Component({
 
   methods: {
     init: function (callback) {
-      const version = wx.getSystemInfoSync().SDKVersion
+      const version = wx.getAppBaseInfo().SDKVersion
       
       console.log(version)
       const canUseNewCanvas = compareVersion(version, '2.9.0') >= 0;
@@ -89,7 +89,6 @@ Component({
       if (forceUseOldCanvas && canUseNewCanvas) {
         console.warn('开发者强制使用旧canvas,建议关闭');
       }
-
       if (isUseNewCanvas) {
         // console.log('微信基础库版本大于2.9.0，开始使用<canvas type="2d"/>');
         // 2.9.0 可以使用 <canvas type="2d"></canvas>
@@ -151,7 +150,7 @@ Component({
           const canvasNode = res[0].node
           this.canvasNode = canvasNode
 
-          const canvasDpr = wx.getSystemInfoSync().pixelRatio
+          const canvasDpr = wx.getDeviceInfo().pixelRatio
           const canvasWidth = res[0].width
           const canvasHeight = res[0].height
 
