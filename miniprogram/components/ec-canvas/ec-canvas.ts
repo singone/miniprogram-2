@@ -227,6 +227,7 @@ Component({
         handler.dispatch('mousemove', {
           zrX: touch.x,
           zrY: touch.y,
+          which: e,
           preventDefault: () => {},
           stopImmediatePropagation: () => {},
           stopPropagation: () => {}
@@ -242,6 +243,7 @@ Component({
         handler.dispatch('mousemove', {
           zrX: touch.x,
           zrY: touch.y,
+          which: e,
           preventDefault: () => {},
           stopImmediatePropagation: () => {},
           stopPropagation: () => {}
@@ -257,6 +259,7 @@ Component({
         handler.dispatch('mouseup', {
           zrX: touch.x,
           zrY: touch.y,
+          which: e,
           preventDefault: () => {},
           stopImmediatePropagation: () => {},
           stopPropagation: () => {}
@@ -264,6 +267,7 @@ Component({
         handler.dispatch('click', {
           zrX: touch.x,
           zrY: touch.y,
+          which: e,
           preventDefault: () => {},
           stopImmediatePropagation: () => {},
           stopPropagation: () => {}

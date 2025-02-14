@@ -13,15 +13,28 @@ page{
     margin-left: 12px;
     padding: 3px;
     box-sizing: border-box;
+    position: relative;
 }
 .img-item.selected{
     border-color: var(--drawer-color-primary);
+}
+.img-item.complete{
+    border-color: var(--drawer-color-success);
+}
+.img-clear{
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    font-size: 32rpx;
+    color: var(--drawer-color-danger);
 }
 .img{
     width: 40px;
     height: 40px;
 }
-
+.scroll{
+    display: flex;
+}
 .footer{
     display: flex;
     padding:  12px;
@@ -42,4 +55,27 @@ page{
 .content{
     flex: 1;
 
+}
+
+.select-type{
+    position: absolute;
+    bottom: 140rpx;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
+.select-type-item{
+    display: flex;
+    flex-wrap: wrap;
+}
+.select-type-item-text{
+    background-color: #eee;
+    margin: 5px;
+    padding: 5px 10px;
+    border-radius: 10px;
+
+}
+.select-type-item-text.selected{
+    background-color: var(--drawer-color-primary);
+    color: #fff;
 }

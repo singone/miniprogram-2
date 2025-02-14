@@ -1,0 +1,35 @@
+<!--pages/chart/index.wxml-->
+<navigation-bar title="结果分析"></navigation-bar>
+<scroll-view scroll-y  class="content">
+    <view class="chart-box">
+        <ec-canvas class="chart" id="chart-com" canvas-id="myChart" ec="{{ ec }}"></ec-canvas>
+
+    </view>
+        <view class="chart-info">
+            <text>y=ax+b</text>
+    </view>
+    <view class="table-title">
+        <text>结果列表</text>
+    </view>
+    <view class="table-list">
+        <view class="table-list-item">
+            <view class="table-list-item-title">
+                <text>图样1</text>
+                <text>浓度：2 mol/L</text>
+            </view>
+            <view class="table-list-item-content">
+                <image src="/images/chart/1.png" mode="aspectFill"></image>
+                <text>接触角：1°</text>
+            </view>
+        </view>
+    </view>
+</scroll-view>
+<view class="footer">
+    <view class="footer_left">
+        <van-button type="primary">保存图表</van-button>
+    </view>
+    <view class="footer_right">
+        <van-button plain>下载结果</van-button>
+        <van-button plain>测试浓度</van-button>
+    </view>
+</view>

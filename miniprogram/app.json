@@ -3,7 +3,9 @@
     "pages/index/index",
     "pages/logs/logs",
     "pages/tools/index",
-    "pages/drawer/index"
+    "pages/drawer/index",
+    "pages/write/index",
+    "pages/chart/index"
   ],
   "window": {
     "navigationBarTextStyle": "black",

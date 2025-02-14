@@ -8,6 +8,20 @@
     "miniprogram": {
       "list": [
         {
+          "name": "pages/chart/index",
+          "pathName": "pages/chart/index",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "pages/write/index",
+          "pathName": "pages/write/index",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
           "name": "pages/drawer/index",
           "pathName": "pages/drawer/index",
           "query": "",

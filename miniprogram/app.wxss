@@ -10,5 +10,9 @@
 } 
 page{
   height: 100%;
-  --drawer-color-primary: green;
+  --drawer-color-primary: #1989fa;
+  --drawer-color-danger: #ee0a24;
+  --drawer-color-warning: #ff976a;
+  --drawer-color-success: #07c160;
+  --drawer-color-info: #909399;
 }
