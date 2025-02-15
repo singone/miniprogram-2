@@ -1,5 +1,10 @@
 <!--index.wxml-->
-<navigation-bar title="角动量测量" back="{{false}}" color="black" background="#FFF"></navigation-bar>
+<van-nav-bar title="角动量测量" />
 <scroll-view class="scrollarea" scroll-y type="list">
-  <van-button bind:tap="handleSelect" type="primary">从相册选择图片</van-button>
+  <view class="button-item">
+    <van-button block bind:tap="handleSelect" type="primary">从相册选择图片</van-button>
+  </view>
+  <view class="button-item">
+    <van-button block bind:tap="handleSelectChat" plain type="primary">从聊天记录选择图片</van-button>
+  </view>
 </scroll-view>

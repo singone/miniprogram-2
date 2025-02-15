@@ -1,9 +1,7 @@
 // pages/drawer/index.ts
 import store from "../../store/index"
-import * as echarts from 'echarts';
-import { transform } from 'echarts-stat';
-import { calculateAngle, findIntersection, tangentSlope } from "./utils";
-echarts.registerTransform(transform.regression);
+import * as echarts from '../../components/ec-canvas/echarts.min.js';
+import { calculateAngle, findIntersection, getDrawerData, tangentSlope } from "./utils";
 
 Page({
 
@@ -66,6 +64,7 @@ Page({
       selectedIndex: index,
       currentUrl: item,
     })
+
     this.readImgInfo();
     this.drawImg();
   },
@@ -143,6 +142,7 @@ Page({
       return;
     }
   
+    console.log(fileData);
     if (fileData[currentUrl.tempFilePath]) {
       this.currentInfo = fileData[currentUrl.tempFilePath];
       this.drawImg();
@@ -196,209 +196,9 @@ Page({
     }
     const $page = this;
     console.log($page.currentInfo, $page.drawInfo,  $page.scale);
-    const intersections = findIntersection(this.currentInfo.ellipse, this.currentInfo.line);
-    console.log(intersections );
-      // 获取直线的斜率
-      const m1 = (this.currentInfo.line.y2 - this.currentInfo.line.y1) / (this.currentInfo.line.x2 - this.currentInfo.line.x1);
-      console.log(intersections );
-      let angleResult = 0;
-      // 计算夹角的位置
-      const tangentArcs = intersections.map((p, index) => {
-        const m2 = tangentSlope(this.currentInfo.ellipse, p.x, p.y);
-        const angle = calculateAngle(m1, m2);
-        if (!angle) {
-          angleResult = angle;
-        } else {
-          angleResult = (angle + angleResult ) / 2;
-        }
-        const startAngle = calculateAngle(m1, 0);
-        const showAngle = (angle * 180 / Math.PI).toFixed(2) + '°';
-        if (index === 0) {
-      
-          return {
-            x: p.x,
-            y: p.y,
-            fontX: p.x + 10,
-            fontY: p.y - 20,
-            clockwise: false,
-            startAngle: startAngle,
-            endAngle: -angle,
-            angle: angle,
-            showAngle: showAngle,
-          }
-        }
-        return {
-          x: p.x,
-          y: p.y,
-          fontX: p.x - 40,
-          fontY: p.y - 20,
-          clockwise: true,
-          startAngle: startAngle + Math.PI,
-          endAngle: -angle,
-          angle: angle,
-          showAngle: showAngle,
-        }
-      })
-      this.currentInfo.angle = angleResult;
-    // 更新每个交点的切线斜率与夹角
-    const tangentLines = intersections.map((p, index) => {
-        const m2 = tangentSlope(this.currentInfo.ellipse, p.x, p.y);
-        const angle = calculateAngle(m1, m2);
-
-        console.log(m2, angle, m1, this.currentInfo.ellipse, p);
-        // 计算切线终点（假设在一定范围内，比如长度为 3）
-        const length = 40;
-        if(m2 === Infinity || m2 === -Infinity){
-          return {
-            x1: p.x,
-            y1: p.y,
-            x2: p.x,
-            y2: p.y - length,
-            angle: angle
-          }
-        }
-        let dx = length / Math.sqrt(1 + m2 * m2);
-        let dy = m2 * dx;
-
-        if (dy > 0) {
-          dx = -dx;
-          dy = -dy;
-        }
-        // 计算切线端点
-        const x2_tangent = p.x + dx;
-        const y2_tangent = p.y + dy;
-        console.log(x2_tangent, y2_tangent);
-        return {
-            x1: p.x, 
-            y1: p.y,
-            x2: x2_tangent,
-            y2: y2_tangent,
-            angle: angle
-        };
-    });
-    console.log(tangentLines);
-    const option = {
-      useCoarsePointer: true,
-      graphic: {
-        elements: [
-          {
-            type: 'group',
-            id: 'group',
-            x: $page.currentInfo.x,
-            y: $page.currentInfo.y,
-            scaleX: $page.scale,
-            scaleY: $page.scale,
-            children: [
-              {
-                type: 'image',
-                id: 'image',
-                x: $page.currentInfo.img.x,
-                y: $page.currentInfo.img.y,
-                rotation: $page.currentInfo.img.rotation,
-                style: {
-                  image: $page.currentInfo.img.url,
-                  width: $page.drawInfo.width ,
-                  height: $page.currentInfo.img.height * $page.currentInfo.img.imgScale,
-                },
-              },
-              {
-                type: 'line',
-                id: 'line',
-                x: 0,
-                y: 0,
-                shape: {
-                  x1: $page.currentInfo.line.x1,
-                  y1: $page.currentInfo.line.y1,
-                  x2: $page.currentInfo.line.x2 ,
-                  y2: $page.currentInfo.line.y2,
-                },
-                style: {
-                  lineWidth: 1,
-                  stroke: 'red',
-                },
-              },
-              {
-                type: 'ellipse',
-                id: 'ellipse',
-                shape: {
-                  rotation: $page.scale,
-                  cx: $page.currentInfo.ellipse.cx, // 椭圆中心的 x 坐标
-                  cy: $page.currentInfo.ellipse.cy, // 椭圆中心的 y 坐标
-                  rx: $page.currentInfo.ellipse.rx, // 椭圆的 x 轴半径
-                  ry: $page.currentInfo.ellipse.ry,   // 椭圆的 y 轴半径
-                },
-                style: {
-                  fill: 'transparent', // 填充颜色
-                  stroke: 'green',    // 边框颜色
-                  lineWidth: 1,       // 边框宽度
-                },
-              },
-            // // 交点标记
-            //   {
-            //       type: 'scatter',
-            //       data: intersectionPoints,
-            //       symbolSize: 10,
-            //       itemStyle: {
-            //           color: 'red'
-            //       },
-            //       name: '交点'
-            //   },
-              // 切线的绘制
-            ...tangentLines.map(tangent => ({
-              type: 'line',
-              shape: {
-                  x1: tangent.x1,
-                  y1: tangent.y1,
-                  x2: tangent.x2,
-                  y2: tangent.y2
-              },
-              style: {
-                  stroke: 'purple',  // 切线的颜色
-                  lineWidth: 1,
-                  lineDash: [5, 5]  // 虚线
-              },
-              name: '切线'
-          })),
-          // 夹角标记（虚弧线）
-          ...tangentArcs.map(tangent => ({
-            type: 'arc',
-            shape: {
-              cx: tangent.x,
-              cy: tangent.y,
-              clockwise: tangent.clockwise,
-                r: 10,
-                startAngle: tangent.startAngle,
-                endAngle: tangent.endAngle,
-            },
-            style: {
-                stroke: 'green',   // 夹角标记线的颜色
-                lineWidth: 1,
-                lineDash: [2, 2]   // 虚线
-            },
-            name: '夹角标记线'
-        })),
-         // 夹角标记（虚弧线）
-         ...tangentArcs.map(tangent => ({
-          type: 'text',
-          style: {
-            fill: 'green',   // 夹角标记线的颜色
-            fontSize: 12,
-            x: tangent.fontX,
-            y: tangent.fontY  ,
-            text: `${(tangent.angle * 180 / Math.PI).toFixed(2)}°`, 
-          },
-      
-          name: '内容'
-      })),
-            ],
-          },
-        ],
-      
-      },
-
-    }
+    const {option, angle} = getDrawerData($page.currentInfo, $page.drawInfo,  $page.scale);
+    $page.currentInfo.angle = angle;
     $page.changeValue();
-
     $page.chart.setOption(option);
 
   },
@@ -420,15 +220,19 @@ Page({
         break;
       case 'horizontal-max':
         this.currentInfo.ellipse.rx = this.currentInfo.ellipse.rx + 1 * changeNum;
+        this.currentInfo.ellipse.cx = this.currentInfo.ellipse.cx + 1 * changeNum / 2;
         break;
       case 'horizontal-min':
         this.currentInfo.ellipse.rx = this.currentInfo.ellipse.rx - 1 * changeNum;
+        this.currentInfo.ellipse.cx = this.currentInfo.ellipse.cx - 1 * changeNum / 2;
         break;
       case 'vertical-max':
         this.currentInfo.ellipse.ry = this.currentInfo.ellipse.ry + 1 * changeNum;
+        this.currentInfo.ellipse.cy = this.currentInfo.ellipse.cy + 1 * changeNum / 2;
         break;
       case 'vertical-min':
         this.currentInfo.ellipse.ry = this.currentInfo.ellipse.ry - 1 * changeNum;
+        this.currentInfo.ellipse.cy = this.currentInfo.ellipse.cy - 1 * changeNum / 2;
         break;
     }
     this.drawImg();
@@ -517,7 +321,7 @@ Page({
   handleChangeConcentration(){
     const $page = this;
     wx.navigateTo({
-      url: '/pages/write/index',
+      url: `/pages/write/index?defaultValue=${$page.currentInfo.concentration || ''}`,
       events: {
         // 为指定事件添加一个监听器，获取被打开页面传送到当前页面的数据
         change: function(data) {
@@ -554,7 +358,8 @@ Page({
   },
   handleFinish() {
     const { fileData } = this.data;
-    if (Object.keys(fileData).length !== store.files.length || Object.keys(fileData).some(key => {
+    console.log(fileData);
+    if (Object.keys(fileData).some(key => {
       return !fileData[key].concentration || !fileData[key].angle;
     })) {
       wx.showToast({
@@ -574,18 +379,28 @@ Page({
     this.currentInfo.concentration = value;
     this.changeValue();
   },
-  changeValue () {
-    const {currentUrl} = this.data;
+  changeValue (force?: boolean) {
+    const {currentUrl, fileData} = this.data;
     console.log(currentUrl);
     if (!currentUrl) {
       return;
     }
-    store.setFilesData({
-      [currentUrl.tempFilePath]: this.currentInfo,
-    });
-    console.log(store.filesData);
+    if (force) {
+      store.setFilesData({
+        [currentUrl.tempFilePath]: this.currentInfo,
+      });
+    }
+
     this.setData({
-      fileData: store.filesData,
+      fileData: {
+        ...fileData,
+        [currentUrl.tempFilePath]: this.currentInfo,
+      },
+    })
+  },
+  handleBack() {
+    wx.navigateBack({
+      delta: 1,
     })
   },
   handleClear(e){

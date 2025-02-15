@@ -1,7 +1,6 @@
 <!--pages/drawer/index.wxml-->
-
-<navigation-bar title="画布" back="{{true}}"></navigation-bar>
- <scroll-view enable-flex class="scroll"  scroll-x="{{true}}" style="height: 50px;"
+<van-nav-bar title="画布" bind:click-left="handleBack" left-arrow="{{true}}" />
+ <scroll-view enable-flex class="scroll"  scroll-x="{{true}}" style="height: 60px;"
     padding="[10, 10, 10, 10]"
  wx:if="files" >
     <view  wx:for="{{files}}" wx:key="{{item.tempFilePath}}"
@@ -64,7 +63,15 @@ type="2d" />
 </view>
 <view active class="footer">
     <view class="footer_left">
-        <van-button type="primary" bind:tap="handleChangeConcentration">修改浓度</van-button>
+        <van-button type="primary" 
+        plain
+        wx:if="{{fileData[files[selectedIndex].tempFilePath].concentration}}"
+         bind:tap="handleChangeConcentration">
+            修改浓度({{fileData[files[selectedIndex].tempFilePath].concentration}}mol/L)
+        </van-button>
+        <van-button type="primary" wx:else bind:tap="handleChangeConcentration">
+            填写浓度
+        </van-button>
     </view>
     <view class="footer_right">
         <van-button wx:if="{{selectedIndex > 0}}" plain bind:tap="handlePrev">上一张</van-button>

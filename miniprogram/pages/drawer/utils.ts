@@ -117,3 +117,211 @@ export function calculateAngle(m1, m2) {
 
     return thetaDegrees;
 }
+
+export function getDrawerData(currentInfo, drawInfo, scale) {
+    const intersections = findIntersection(currentInfo.ellipse, currentInfo.line);
+    console.log(intersections );
+      // 获取直线的斜率
+        const m1 = (currentInfo.line.y2 - currentInfo.line.y1) / (currentInfo.line.x2 - currentInfo.line.x1);
+      console.log(intersections );
+      let angleResult = 0;
+      // 计算夹角的位置
+      const tangentArcs = intersections.map((p, index) => {
+        const m2 = tangentSlope(currentInfo.ellipse, p.x, p.y);
+        const angle = calculateAngle(m1, m2);
+        if (!angle) {
+          angleResult = angle;
+        } else {
+          angleResult = (angle + angleResult ) / 2;
+        }
+        const startAngle = calculateAngle(m1, 0);
+        const showAngle = (angle * 180 / Math.PI).toFixed(2) + '°';
+        if (index === 0) {
+      
+          return {
+            x: p.x,
+            y: p.y,
+            fontX: p.x + 10,
+            fontY: p.y - 20,
+            clockwise: false,
+            startAngle: startAngle,
+            endAngle: -angle,
+            angle: angle,
+            showAngle: showAngle,
+          }
+        }
+        return {
+          x: p.x,
+          y: p.y,
+          fontX: p.x - 40,
+          fontY: p.y - 20,
+          clockwise: true,
+          startAngle: startAngle + Math.PI,
+          endAngle: -angle,
+          angle: angle,
+          showAngle: showAngle,
+        }
+      })
+    // 更新每个交点的切线斜率与夹角
+    const tangentLines = intersections.map((p, index) => {
+        const m2 = tangentSlope(currentInfo.ellipse, p.x, p.y);
+        const angle = calculateAngle(m1, m2);
+
+        console.log(m2, angle, m1, currentInfo.ellipse, p);
+        // 计算切线终点（假设在一定范围内，比如长度为 3）
+        const length = 40;
+        if(m2 === Infinity || m2 === -Infinity){
+          return {
+            x1: p.x,
+            y1: p.y,
+            x2: p.x,
+            y2: p.y - length,
+            angle: angle
+          }
+        }
+        let dx = length / Math.sqrt(1 + m2 * m2);
+        let dy = m2 * dx;
+
+        if (dy > 0) {
+          dx = -dx;
+          dy = -dy;
+        }
+        // 计算切线端点
+        const x2_tangent = p.x + dx;
+        const y2_tangent = p.y + dy;
+        console.log(x2_tangent, y2_tangent);
+        return {
+            x1: p.x, 
+            y1: p.y,
+            x2: x2_tangent,
+            y2: y2_tangent,
+            angle: angle
+        };
+    });
+    console.log(tangentLines);
+    const option = {
+      useCoarsePointer: true,
+      graphic: {
+        elements: [
+          {
+            type: 'group',
+            id: 'group',
+            x: currentInfo.x,
+            y: currentInfo.y,
+            scaleX: scale,
+            scaleY: scale,
+            children: [
+              {
+                type: 'image',
+                id: 'image',
+                x: currentInfo.img.x,
+                y: currentInfo.img.y,
+                rotation: currentInfo.img.rotation,
+                style: {
+                  image: currentInfo.img.url,
+                  width: drawInfo.width ,
+                  height: currentInfo.img.height * currentInfo.img.imgScale,
+                },
+              },
+              {
+                type: 'line',
+                id: 'line',
+                x: 0,
+                y: 0,
+                shape: {
+                  x1: currentInfo.line.x1,
+                  y1: currentInfo.line.y1,
+                  x2: currentInfo.line.x2 ,
+                  y2: currentInfo.line.y2,
+                },
+                style: {
+                  lineWidth: 1,
+                  stroke: 'red',
+                },
+              },
+              {
+                type: 'ellipse',
+                id: 'ellipse',
+                shape: {
+                  rotation: scale,
+                  cx: currentInfo.ellipse.cx, // 椭圆中心的 x 坐标
+                  cy: currentInfo.ellipse.cy, // 椭圆中心的 y 坐标
+                  rx: currentInfo.ellipse.rx, // 椭圆的 x 轴半径
+                  ry: currentInfo.ellipse.ry,   // 椭圆的 y 轴半径
+                },
+                style: {
+                  fill: 'transparent', // 填充颜色
+                  stroke: 'green',    // 边框颜色
+                  lineWidth: 1,       // 边框宽度
+                },
+              },
+            // // 交点标记
+            //   {
+            //       type: 'scatter',
+            //       data: intersectionPoints,
+            //       symbolSize: 10,
+            //       itemStyle: {
+            //           color: 'red'
+            //       },
+            //       name: '交点'
+            //   },
+              // 切线的绘制
+            ...tangentLines.map(tangent => ({
+              type: 'line',
+              shape: {
+                  x1: tangent.x1,
+                  y1: tangent.y1,
+                  x2: tangent.x2,
+                  y2: tangent.y2
+              },
+              style: {
+                  stroke: 'purple',  // 切线的颜色
+                  lineWidth: 1,
+                  lineDash: [5, 5]  // 虚线
+              },
+              name: '切线'
+          })),
+          // 夹角标记（虚弧线）
+          ...tangentArcs.map(tangent => ({
+            type: 'arc',
+            shape: {
+              cx: tangent.x,
+              cy: tangent.y,
+              clockwise: tangent.clockwise,
+                r: 10,
+                startAngle: tangent.startAngle,
+                endAngle: tangent.endAngle,
+            },
+            style: {
+                stroke: 'green',   // 夹角标记线的颜色
+                lineWidth: 1,
+                lineDash: [2, 2]   // 虚线
+            },
+            name: '夹角标记线'
+        })),
+         // 夹角标记（虚弧线）
+         ...tangentArcs.map(tangent => ({
+          type: 'text',
+          style: {
+            fill: 'green',   // 夹角标记线的颜色
+            fontSize: 12,
+            x: tangent.fontX,
+            y: tangent.fontY  ,
+            text: `${(tangent.angle * 180 / Math.PI).toFixed(2)}°`, 
+          },
+      
+          name: '内容'
+      })),
+            ],
+          },
+        ],
+      
+      },
+
+    }
+
+    return {
+        option,
+        angle: angleResult
+    }
+}   

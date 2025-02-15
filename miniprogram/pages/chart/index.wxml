@@ -1,25 +1,31 @@
 <!--pages/chart/index.wxml-->
-<navigation-bar title="结果分析"></navigation-bar>
-<scroll-view scroll-y  class="content">
+<van-nav-bar title="结果分析" bind:click-left="handleBack" left-arrow="{{true}}" />
+<scroll-view scroll-y bindscroll="handleScroll" class="content">
     <view class="chart-box">
         <ec-canvas class="chart" id="chart-com" canvas-id="myChart" ec="{{ ec }}"></ec-canvas>
 
     </view>
         <view class="chart-info">
-            <text>y=ax+b</text>
+            <text>{{linear.expression}}</text>
     </view>
     <view class="table-title">
         <text>结果列表</text>
     </view>
     <view class="table-list">
-        <view class="table-list-item">
+        <view class="table-list-item"
+         wx:for="{{files}}"
+          wx:key="index">
             <view class="table-list-item-title">
-                <text>图样1</text>
-                <text>浓度：2 mol/L</text>
+                <image class="table-list-item-content-img" src="{{item.tempFilePath}}" mode="aspectFill"></image>
+                <view class="table-list-item-content-info">
+                    <text>浓度：{{item.concentration}} mol/L</text>
+                    <text>接触角：{{item.angle}}°</text>
+                </view>
             </view>
             <view class="table-list-item-content">
-                <image src="/images/chart/1.png" mode="aspectFill"></image>
-                <text>接触角：1°</text>
+                <view class="table-list-item-drawer">
+                    <ec-canvas data-index="{{index}}" data-item="{{item}}" class="chart" id="table-drawer-com-{{index}}" canvas-id="table-Chart-{{index}}" ec="{{ ecDrawer }}"></ec-canvas>
+                </view>
             </view>
         </view>
     </view>
@@ -29,7 +35,7 @@
         <van-button type="primary">保存图表</van-button>
     </view>
     <view class="footer_right">
-        <van-button plain>下载结果</van-button>
-        <van-button plain>测试浓度</van-button>
+        <van-button plain>分享结果</van-button>
+        <van-button plain type="primary">测试浓度</van-button>
     </view>
 </view>

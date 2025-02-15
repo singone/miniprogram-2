@@ -15,4 +15,6 @@ page{
   --drawer-color-warning: #ff976a;
   --drawer-color-success: #07c160;
   --drawer-color-info: #909399;
+  --nav-bar-icon-color: #333;
+  --nav-bar-arrow-size: 40rpx;
 }

@@ -10,4 +10,80 @@ page{
 }
 .content{
     flex: 1;
+    height: 0;
+    padding-bottom: 100px;
+}
+.chart-info{
+    padding: 10px;
+    font-size: 14px;
+    background-color: #fff;
+    border-radius: 10px;
+    margin: 10px;
+    border: 1px solid #ccc;
+    display: flex;
+}
+.footer{
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    box-sizing: border-box;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: #fff;
+    border-top: 1px solid #ccc;
+}
+.footer .van-button{
+    flex: 1;
+    width: auto;
+    margin: 0 4px;
+    white-space: nowrap;
+}
+.footer_left{
+    display: flex;
+    justify-content: flex-start;
+    flex: 1;
+}
+.footer_right{
+    display: flex;
+    justify-content: flex-end;
+    flex: 1;
+}
+.table-title{
+    padding: 10px;
+    font-size: 14px;
+}
+.table-list{
+    margin: 10px;
+}
+.table-list-item{
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eee;
+}
+.table-list-item-title{
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    align-items: center;
+    color: #666;
+}
+.table-list-item-content{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #666;
+}
+.table-list-item-drawer{
+    height: 300px;
+    width: 100%;
+}
+.table-list-item-content-info{
+    font-size: 12px;
+    color: #999;
+}
+.table-list-item-content-img{
+    width: 40px;
+    height: 40px;
 }

@@ -5,6 +5,7 @@ type Store = {
     setFilesData(data: Record<string, any>): void
     removeFile(src: string): void
     setFiles(files: WechatMiniprogram.MediaFile[]): void
+    clearFilesData(): void
 }
 export default {
     files: wx.getStorageSync('files') || [],
@@ -17,6 +18,13 @@ export default {
         wx.setStorage({
             key: 'filesData',
             data: data,
+        });
+    },
+    clearFilesData() {
+        this.filesData = {};
+        wx.setStorage({
+            key: 'filesData',
+            data: this.filesData,
         });
     },
     removeFile(src: string) {
@@ -37,6 +45,8 @@ export default {
     },
     setFiles(files: WechatMiniprogram.MediaFile[]) {
         this.files = files;
+        this.filesData = {};
+        this.clearFilesData();
         wx.setStorage({
             key: 'files',
             data: files,

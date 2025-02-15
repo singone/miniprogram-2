@@ -1,7 +1,7 @@
 <!--pages/write/index.wxml-->
-<navigation-bar title="输入浓度"></navigation-bar>
+<van-nav-bar left-arrow="{{true}}" bind:click-left="handleBack" title="输入浓度" />
 <view class="content">
-  <van-field auto-focus model:value="{{value}}" type="number" label="浓度" placeholder="请输入浓度(mol/L)" />
+  <van-field auto-focus model:value="{{value}}" type="digit" label="浓度" placeholder="请输入浓度(mol/L)" />
 </view>
 <view class="footer">
     <van-button type="primary" bind:tap="handleConfirm" block>确定</van-button>
