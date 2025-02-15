@@ -18,6 +18,20 @@ Page({
     fileData: store.filesData || {},
     selectType: '',
     changeNum: 1,
+    isTest: false,
+    angle: '',
+    concentration: '',
+    showTest: false,
+    actions: [
+      {
+        name: '从相册中选择',
+        value: 'photo',
+      },
+      {
+        name: '从聊天中选择',
+        value: 'chat',
+      },
+    ],
   },
   drawInfo: {
     width: 0,
@@ -85,8 +99,9 @@ Page({
       this.drawInfo = {
         width,
         height,
-        dpr,
+        dpr : dpr || 1,
       }
+      this.scale = 1;
       this.canvas = canvas;
       this.readImgInfo();
   
@@ -122,14 +137,63 @@ Page({
           selectType: params.event.target.id,
         });
       })
+      let moveId: string | null = null;
+      let startX = 0;
+      let startY = 0;
       chart.on('mousedown', function(params) {
+        console.log(params);
+        moveId = params.event.target.id;
+        startX = params.event.offsetX;
+        startY = params.event.offsetY;
+      });
+      chart.on('wheel', function(params) {
         console.log(params);
       });
       chart.on('mousemove', function(params) {
-        console.log(params);
+        if (!moveId) {
+          return;
+        }
+        console.log(params.event, startX, startY, $page.scale, $page,  $page.drawInfo.dpr);
+        const offsetX = (params.event.offsetX - startX) / $page.scale / $page.drawInfo.dpr;
+        const offsetY = (params.event.offsetY - startY) / $page.scale / $page.drawInfo.dpr;
+        startX = params.event.offsetX;
+        startY = params.event.offsetY;
+        if (moveId === 'line') {
+          console.log(offsetY);
+          $page.currentInfo.line.y1 = $page.currentInfo.line.y1 + offsetY;
+          $page.currentInfo.line.y2 = $page.currentInfo.line.y2 + offsetY;
+          $page.drawImg();
+          return
+        }
+       if (moveId === 'ellipse') {
+          $page.currentInfo.ellipse.cx = $page.currentInfo.ellipse.cx + offsetX;
+          $page.currentInfo.ellipse.cy = $page.currentInfo.ellipse.cy + offsetY;
+          $page.drawImg();
+          return;
+        }
+        if (moveId === 'image' || moveId === 'group') {
+          $page.currentInfo.x = $page.currentInfo.x + offsetX;
+          $page.currentInfo.y = $page.currentInfo.y + offsetY;
+          $page.chart.setOption({
+            graphic: [
+              {
+                id: 'group',
+                scaleX:   $page.scale,
+                scaleY: $page.scale,
+                x: $page.currentInfo.x,
+                y: $page.currentInfo.y,
+              }
+            ]
+          });
+          return;
+        }
+        console.log(offsetX, offsetY);
       });
       chart.on('mouseup', function(params) {
-        console.log(params);
+        moveId = null;
+        startX = 0;
+        startY = 0;
+        // console.log(params);
       });
       // 注意这里一定要返回 chart 实例，否则会影响事件处理等
       return chart;
@@ -137,13 +201,13 @@ Page({
   },
 
   readImgInfo() {
-    const {currentUrl, fileData } = this.data;
+    const {currentUrl, fileData, isTest } = this.data;
     if (!currentUrl) {
       return;
     }
   
     console.log(fileData);
-    if (fileData[currentUrl.tempFilePath]) {
+    if (!isTest && fileData[currentUrl.tempFilePath]) {
       this.currentInfo = fileData[currentUrl.tempFilePath];
       this.drawImg();
       return;
@@ -255,6 +319,9 @@ Page({
   },
   dealBox(type){
     console.log(type);
+    if (!this.chart) {
+      return;
+    }
     const {changeNum} = this.data;
     switch(type){
       case 'up':
@@ -380,9 +447,20 @@ Page({
     this.changeValue();
   },
   changeValue (force?: boolean) {
-    const {currentUrl, fileData} = this.data;
+    const {currentUrl, fileData, isTest, linear} = this.data;
     console.log(currentUrl);
     if (!currentUrl) {
+      return;
+    }
+    if (isTest) {
+      if (linear) {
+        const angle = this.currentInfo.angle * 180 / Math.PI;
+        const concentration = (angle - linear.parameter.intercept) / linear.parameter.gradient;
+        this.setData({
+          angle: Math.round(angle * 100) / 100,
+          concentration: Math.round(concentration * 100) / 100,
+        });
+      }
       return;
     }
     if (force) {
@@ -402,6 +480,51 @@ Page({
     wx.navigateBack({
       delta: 1,
     })
+  },
+  handleTest(){
+    this.setData({
+      showTest: true,
+    })
+  },
+  handleCancel(){
+    this.setData({
+      showTest: false,
+    })
+  },
+  handleSelect(e){
+    const {value} = e.detail;
+    console.log(value);
+    if (e.detail.value === 'photo') {
+      wx.chooseMedia({
+        count: 1,
+        mediaType: ['image'],
+        sourceType: ['album'],
+        success: (res) => {
+          console.log(res);
+          this.goToTest(res.tempFiles[0]);
+        },
+      })
+      return;
+    } 
+    if (e.detail.value === 'chat') {
+      wx.chooseMessageFile({
+        count: 1,
+        type: 'image',
+        success: (res) => {
+          this.goToTest({
+            tempFilePath: res.tempFiles[0].path,
+          });
+        },
+      });
+    }
+  },
+  goToTest(file) {
+    this.setData({
+      currentUrl: file,
+      showTest: false,
+    })
+    this.readImgInfo();
+    this.drawImg();
   },
   handleClear(e){
     const {index, src} = e.currentTarget.dataset;
@@ -431,20 +554,32 @@ Page({
   /**
    * 生命周期函数--监听页面加载
    */
-  onLoad() {
+  onLoad(options) {
+    console.log(options);
+    if (options.test) {
+      this.setData({
+        isTest: true,
+        files: [],
+        fileData: {},
+        linear: store.testInfo.linear,
+        currentUrl: store.testInfo.file || null,
+      });
+      return;
+    }
     this.setData({
       files: store.files || [],
       currentUrl: store.files[0] || null,
       fileData: store.filesData || {},
       selectedIndex: 0,
-    })
+      isTest: false,
+    });
   },
 
   /**
    * 生命周期函数--监听页面初次渲染完成
    */
   onReady() {
-  
+    
   },
 
   /**

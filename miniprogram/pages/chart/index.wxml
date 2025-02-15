@@ -36,6 +36,13 @@
     </view>
     <view class="footer_right">
         <van-button plain>分享结果</van-button>
-        <van-button plain type="primary">测试浓度</van-button>
+        <van-button plain type="primary" bindtap="handleTest">测试浓度</van-button>
     </view>
 </view>
+<van-action-sheet
+  show="{{ showTest }}"
+  actions="{{ actions }}"
+  cancel-text="取消"
+  bind:close="handleClose"
+  bind:select="handleSelect"
+/>

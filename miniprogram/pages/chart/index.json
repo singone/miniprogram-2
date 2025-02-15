@@ -2,6 +2,7 @@
   "usingComponents": {
     "van-button": "@vant/weapp/button/index",
     "ec-canvas": "/components/ec-canvas/ec-canvas",
+    "van-action-sheet": "@vant/weapp/action-sheet/index",
     "van-nav-bar": "@vant/weapp/nav-bar/index"
   }
 }

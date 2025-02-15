@@ -15,9 +15,12 @@ Page({
     files: store.files || [],
     ec: {
       lazyLoad: true,
-    
     },
-   
+    showTest: false,
+    actions: [
+      { name: '从相册选择', value: 'photo' },
+      { name: '从聊天记录中选择', value: 'chat' },
+    ],
   },
 
   /**
@@ -136,12 +139,57 @@ Page({
    
 
   },
-  handleScroll(e) {
-    console.log(e);
+  handleScroll() {
   },
   handleBack() {
     wx.navigateBack({
       delta: 1,
+    })
+  },
+  handleTest() {
+    this.setData({
+      showTest: true,
+    })
+  },
+  handleClose() {
+    this.setData({
+      showTest: false,
+    })
+  },
+  handleSelect(e) {
+    console.log(e);
+    if (e.detail.value === 'photo') {
+      wx.chooseMedia({
+        count: 1,
+        mediaType: ['image'],
+        sourceType: ['album'],
+        success: (res) => {
+          console.log(res);
+          this.goToTest(res.tempFiles[0]);
+        },
+      })
+      return;
+    } 
+    if (e.detail.value === 'chat') {
+      wx.chooseMessageFile({
+        count: 1,
+        type: 'image',
+        success: (res) => {
+          this.goToTest({
+            tempFilePath: res.tempFiles[0].path,
+          });
+        },
+      });
+    }
+  },  
+  goToTest(file) {
+    const { linear } = this.data;
+    store.setTestInfo({
+      file,
+      linear,
+    });
+    wx.navigateTo({
+      url: `/pages/drawer/index?test=true`,
     })
   },
   /**

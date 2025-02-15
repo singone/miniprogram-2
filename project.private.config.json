@@ -11,7 +11,7 @@
         {
           "name": "pages/chart/index",
           "pathName": "pages/chart/index",
-          "query": "",
+          "query": "test=true",
           "launchMode": "default",
           "scene": null
         },

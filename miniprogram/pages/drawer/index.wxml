@@ -1,8 +1,10 @@
 <!--pages/drawer/index.wxml-->
-<van-nav-bar title="画布" bind:click-left="handleBack" left-arrow="{{true}}" />
- <scroll-view enable-flex class="scroll"  scroll-x="{{true}}" style="height: 60px;"
+<van-nav-bar title="{{isTest ? '测量浓度' : '画布'}}" bind:click-left="handleBack" left-arrow="{{true}}" />
+ <scroll-view enable-flex
+  class="scroll"  scroll-x="{{true}}" style="height: 60px;"
     padding="[10, 10, 10, 10]"
- wx:if="files" >
+    wx:if="files && !isTest"
+>
     <view  wx:for="{{files}}" wx:key="{{item.tempFilePath}}"
     class="img-item {{index === selectedIndex ? 'selected' : ''}} {{fileData[item.tempFilePath] && fileData[item.tempFilePath].concentration && fileData[item.tempFilePath].angle ? 'complete' : ''}}"
     data-item="{{item}}"
@@ -18,7 +20,7 @@
 ec="{{ ec }}"
 id="draw-com"
 type="2d" />
-<view class="select-type">
+<view class="select-type {{isTest ? 'test-select-type' : ''}}">
     <view class="select-type-item">
         <view data-type="{{0.1}}" bind:tap="handleSelectNum" class="select-type-item-text {{changeNum === 0.1 ? 'selected' : ''}}">微调</view>
         <view data-type="{{1}}" bind:tap="handleSelectNum" class="select-type-item-text {{changeNum === 1 ? 'selected' : ''}}">正常</view>
@@ -61,21 +63,46 @@ type="2d" />
         </view>
     </block>
 </view>
-<view active class="footer">
-    <view class="footer_left">
-        <van-button type="primary" 
-        plain
-        wx:if="{{fileData[files[selectedIndex].tempFilePath].concentration}}"
-         bind:tap="handleChangeConcentration">
-            修改浓度({{fileData[files[selectedIndex].tempFilePath].concentration}}mol/L)
-        </van-button>
-        <van-button type="primary" wx:else bind:tap="handleChangeConcentration">
-            填写浓度
-        </van-button>
+<block wx:if="{{isTest === false}}">
+    <view class="footer">
+        <view class="footer_left">
+            <van-button type="primary" 
+            plain
+            wx:if="{{fileData[files[selectedIndex].tempFilePath].concentration}}"
+            bind:tap="handleChangeConcentration">
+                修改浓度({{fileData[files[selectedIndex].tempFilePath].concentration}}mol/L)
+            </van-button>
+            <van-button type="primary" wx:else bind:tap="handleChangeConcentration">
+                填写浓度
+            </van-button>
+        </view>
+        <view class="footer_right">
+            <van-button wx:if="{{selectedIndex > 0}}" plain bind:tap="handlePrev">上一张</van-button>
+            <van-button wx:if="{{selectedIndex < files.length - 1}}" plain type="primary" bind:tap="handleNext">下一张</van-button>
+            <van-button wx:if="{{selectedIndex === files.length - 1}}" plain type="primary" bind:tap="handleFinish">完成</van-button>
+        </view>
     </view>
-    <view class="footer_right">
-        <van-button wx:if="{{selectedIndex > 0}}" plain bind:tap="handlePrev">上一张</van-button>
-        <van-button wx:if="{{selectedIndex < files.length - 1}}" plain type="primary" bind:tap="handleNext">下一张</van-button>
-         <van-button wx:if="{{selectedIndex === files.length - 1}}" plain type="primary" bind:tap="handleFinish">完成</van-button>
+</block>
+<block wx:else>
+    <view class="test-info">
+        <text>公式：{{linear.expression}}</text>
+        <text>测量角度：{{angle}}°</text>
     </view>
-</view>
+    <view active class="footer">
+        <view class="footer_left">
+        <span>浓度：{{concentration}}mol/L</span>
+        </view>
+        <view class="footer_right">
+            <van-button plain type="primary" bind:tap="handleSaveText">保存结果</van-button>
+            <van-button plain type="primary" bind:tap="handleTest">继续测试</van-button>
+        </view>
+    </view>
+</block>
+<van-action-sheet
+  show="{{ showTest }}"
+  actions="{{ actions }}"
+  cancel-text="取消"
+  z-index="10000"
+  bind:close="handleClose"
+  bind:select="handleSelect"
+/>
