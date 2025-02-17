@@ -1,5 +1,5 @@
 <!--index.wxml-->
-<van-nav-bar title="角动量测量" />
+<van-nav-bar title="test" />
 <scroll-view class="scrollarea" scroll-y type="list">
   <view class="button-item">
     <van-button block bind:tap="handleSelect" type="primary">从相册选择图片</van-button>
@@ -7,4 +7,9 @@
   <view class="button-item">
     <van-button block bind:tap="handleSelectChat" plain type="primary">从聊天记录选择图片</van-button>
   </view>
+  <block wx:if="files.length > 0">
+    <view class="button-item">
+      <van-button block bind:tap="handleSelectResult" plain type="primary">查看上次结果</van-button>
+    </view>
+  </block>
 </scroll-view>

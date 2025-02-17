@@ -150,7 +150,7 @@ Component({
           const canvasNode = res[0].node
           this.canvasNode = canvasNode
 
-          const canvasDpr = wx.getDeviceInfo().pixelRatio
+          const canvasDpr = wx.getWindowInfo().pixelRatio
           const canvasWidth = res[0].width
           const canvasHeight = res[0].height
 
@@ -220,6 +220,7 @@ Component({
         handler.dispatch('mousedown', {
           zrX: touch.x,
           zrY: touch.y,
+          which: e,
           preventDefault: () => {},
           stopImmediatePropagation: () => {},
           stopPropagation: () => {}

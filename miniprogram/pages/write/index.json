@@ -1,5 +1,5 @@
 {
-
+  "disableScroll": true,
   "usingComponents": {
     "van-field": "@vant/weapp/field/index",
     "van-button": "@vant/weapp/button/index",

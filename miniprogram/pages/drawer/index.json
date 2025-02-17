@@ -1,4 +1,5 @@
 {
+  "disableScroll": true,
   "usingComponents": {
      "van-button": "@vant/weapp/button/index",
      "ec-canvas": "/components/ec-canvas/ec-canvas",

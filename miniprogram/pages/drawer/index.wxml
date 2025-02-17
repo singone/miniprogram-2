@@ -1,5 +1,9 @@
 <!--pages/drawer/index.wxml-->
 <van-nav-bar title="{{isTest ? '测量浓度' : '画布'}}" bind:click-left="handleBack" left-arrow="{{true}}" />
+<ec-canvas class="canvas" 
+ec="{{ ec }}"
+id="draw-com"
+type="2d" />
  <scroll-view enable-flex
   class="scroll"  scroll-x="{{true}}" style="height: 60px;"
     padding="[10, 10, 10, 10]"
@@ -16,10 +20,6 @@
         <van-icon bind:tap="handleClear" data-index="{{index}}" data-src="{{item.tempFilePath}}" class="img-clear" name="clear" />
     </view>
  </scroll-view>
-<ec-canvas class="canvas" 
-ec="{{ ec }}"
-id="draw-com"
-type="2d" />
 <view class="select-type {{isTest ? 'test-select-type' : ''}}">
     <view class="select-type-item">
         <view data-type="{{0.1}}" bind:tap="handleSelectNum" class="select-type-item-text {{changeNum === 0.1 ? 'selected' : ''}}">微调</view>
@@ -63,6 +63,7 @@ type="2d" />
         </view>
     </block>
 </view>
+
 <block wx:if="{{isTest === false}}">
     <view class="footer">
         <view class="footer_left">
@@ -104,5 +105,5 @@ type="2d" />
   cancel-text="取消"
   z-index="10000"
   bind:close="handleClose"
-  bind:select="handleSelect"
+  bind:select="handleSelectPhoto"
 />

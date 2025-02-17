@@ -5,6 +5,7 @@ page{
 }
 .canvas{
     flex: 1;
+    border: 1px solid #eee;
 }
 
 .img-item{
@@ -56,13 +57,9 @@ page{
 }
 .content{
     flex: 1;
-
 }
 
 .select-type{
-    position: absolute;
-    bottom: 140rpx;
-    left: 0;
     width: 100%;
     z-index: 1;
 }
@@ -78,7 +75,7 @@ page{
 }
 .select-type-item{
     display: flex;
-    flex-wrap: wrap;
+    height: 100rpx;
 }
 .select-type-item-text{
     background-color: #eee;

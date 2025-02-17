@@ -6,6 +6,12 @@ const app = getApp<IAppOption>()
 
 Page({
   data: {
+    files: [],
+  },
+  onLoad(options) {
+    this.setData({
+      files: store.files || [],
+    })
   },
   handleSelect() {
     wx.chooseMedia({
@@ -21,6 +27,11 @@ Page({
         })
         console.log(res)
       }
+    })
+  },
+  handleSelectResult() {
+    wx.navigateTo({
+      url: '/pages/drawer/index',
     })
   },
   handleSelectChat() {

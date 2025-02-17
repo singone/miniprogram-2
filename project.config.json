@@ -18,8 +18,8 @@
     "showShadowRootInWxmlPanel": false,
     "packNpmRelationList": [
       {
-        "packageJsonPath": "./package.json",
-        "miniprogramNpmDistDir": "./miniprogram/npm"
+        "packageJsonPath": "./miniprogram/package.json",
+        "miniprogramNpmDistDir": "./miniprogram/"
       }
     ],
     "ignoreUploadUnusedFiles": true,

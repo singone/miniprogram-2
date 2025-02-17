@@ -1,6 +1,11 @@
 export const checkTap = () => {
 
 }
+
+export const GROUP_ID = 'group';
+export const IMAGE_ID = 'image';
+export const LINE_ID = 'line';
+export const ELLIPSE_ID = 'ellipse';
 // 计算直线和椭圆的交点
 // line ax + by + c = 0
 export function findIntersection(ellipse, line) {
@@ -119,11 +124,11 @@ export function calculateAngle(m1, m2) {
 }
 
 export function getDrawerData(currentInfo, drawInfo, scale) {
+  const selectedColor = '#ee0a24';
+  const normalColor = '#909399';
     const intersections = findIntersection(currentInfo.ellipse, currentInfo.line);
-    console.log(intersections );
       // 获取直线的斜率
         const m1 = (currentInfo.line.y2 - currentInfo.line.y1) / (currentInfo.line.x2 - currentInfo.line.x1);
-      console.log(intersections );
       let angleResult = 0;
       // 计算夹角的位置
       const tangentArcs = intersections.map((p, index) => {
@@ -167,7 +172,6 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
         const m2 = tangentSlope(currentInfo.ellipse, p.x, p.y);
         const angle = calculateAngle(m1, m2);
 
-        console.log(m2, angle, m1, currentInfo.ellipse, p);
         // 计算切线终点（假设在一定范围内，比如长度为 3）
         const length = 40;
         if(m2 === Infinity || m2 === -Infinity){
@@ -189,7 +193,6 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
         // 计算切线端点
         const x2_tangent = p.x + dx;
         const y2_tangent = p.y + dy;
-        console.log(x2_tangent, y2_tangent);
         return {
             x1: p.x, 
             y1: p.y,
@@ -198,14 +201,14 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
             angle: angle
         };
     });
-    console.log(tangentLines);
+    console.log(currentInfo.selectType);
     const option = {
       useCoarsePointer: true,
       graphic: {
         elements: [
           {
             type: 'group',
-            id: 'group',
+            id: GROUP_ID,
             x: currentInfo.x,
             y: currentInfo.y,
             scaleX: scale,
@@ -213,9 +216,11 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
             children: [
               {
                 type: 'image',
-                id: 'image',
+                id: IMAGE_ID,
                 x: currentInfo.img.x,
                 y: currentInfo.img.y,
+                originX: drawInfo.width / 2,
+                originY: currentInfo.img.height * currentInfo.img.imgScale / 2,
                 rotation: currentInfo.img.rotation,
                 style: {
                   image: currentInfo.img.url,
@@ -225,7 +230,7 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
               },
               {
                 type: 'line',
-                id: 'line',
+                id: LINE_ID,
                 x: 0,
                 y: 0,
                 shape: {
@@ -236,24 +241,49 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
                 },
                 style: {
                   lineWidth: 1,
-                  stroke: 'red',
+                  stroke: currentInfo.selectType === 'line' ? selectedColor : normalColor,
                 },
               },
               {
-                type: 'ellipse',
-                id: 'ellipse',
-                shape: {
-                  rotation: scale,
-                  cx: currentInfo.ellipse.cx, // 椭圆中心的 x 坐标
-                  cy: currentInfo.ellipse.cy, // 椭圆中心的 y 坐标
-                  rx: currentInfo.ellipse.rx, // 椭圆的 x 轴半径
-                  ry: currentInfo.ellipse.ry,   // 椭圆的 y 轴半径
-                },
-                style: {
-                  fill: 'transparent', // 填充颜色
-                  stroke: 'green',    // 边框颜色
-                  lineWidth: 1,       // 边框宽度
-                },
+                type: 'group',
+                id: ELLIPSE_ID,
+                x: currentInfo.ellipse.cx - currentInfo.ellipse.rx,
+                y: currentInfo.ellipse.cy - currentInfo.ellipse.ry,
+                originX: currentInfo.ellipse.rx,
+                originY: currentInfo.ellipse.ry,
+                children: [
+                  {
+                    type: 'ellipse',
+                    id: ELLIPSE_ID + '_ellipse',
+                    shape: {
+                      cx: currentInfo.ellipse.rx, // 椭圆中心的 x 坐标
+                      cy: currentInfo.ellipse.ry, // 椭圆中心的 y 坐标
+                      rx: currentInfo.ellipse.rx, // 椭圆的 x 轴半径
+                      ry: currentInfo.ellipse.ry,   // 椭圆的 y 轴半径
+                    },
+                    style: {
+                      fill: 'transparent', // 填充颜色
+                      stroke: currentInfo.selectType === 'ellipse' ? selectedColor : normalColor,    // 边框颜色
+                      lineWidth: 1,       // 边框宽度
+                    },
+                  },
+                  ...[[currentInfo.ellipse.rx, 0, 'right'], [-currentInfo.ellipse.rx, 0, 'left'], [0, currentInfo.ellipse.ry, 'bottom'], [0, -currentInfo.ellipse.ry, 'top']].map((p) => ({
+                    type: 'circle',
+                    id: ELLIPSE_ID + '_ellipse_circle_' + p[2],
+                    shape: {
+                      cx: p[0] + currentInfo.ellipse.rx,
+                      cy: p[1] + currentInfo.ellipse.ry,
+                      r: 3,
+                    },
+                    invisible: currentInfo.selectType !== 'ellipse',
+                    style: {
+                      stroke: selectedColor, // 填充颜色
+                      fill: '#eee', // 填充颜色
+                      lineWidth: 2,       // 边框宽度
+                    },
+                  }))
+                ],
+             
               },
             // // 交点标记
             //   {
@@ -268,6 +298,7 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
               // 切线的绘制
             ...tangentLines.map(tangent => ({
               type: 'line',
+              silent: true,
               shape: {
                   x1: tangent.x1,
                   y1: tangent.y1,
@@ -275,7 +306,7 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
                   y2: tangent.y2
               },
               style: {
-                  stroke: 'purple',  // 切线的颜色
+                  stroke: normalColor,  // 切线的颜色
                   lineWidth: 1,
                   lineDash: [5, 5]  // 虚线
               },
@@ -284,6 +315,7 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
           // 夹角标记（虚弧线）
           ...tangentArcs.map(tangent => ({
             type: 'arc',
+            silent: true,
             shape: {
               cx: tangent.x,
               cy: tangent.y,
@@ -293,7 +325,7 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
                 endAngle: tangent.endAngle,
             },
             style: {
-                stroke: 'green',   // 夹角标记线的颜色
+                stroke: normalColor,   // 夹角标记线的颜色
                 lineWidth: 1,
                 lineDash: [2, 2]   // 虚线
             },
@@ -301,7 +333,8 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
         })),
          // 夹角标记（虚弧线）
          ...tangentArcs.map(tangent => ({
-          type: 'text',
+          type: 'text', 
+          silent: true,
           style: {
             fill: 'green',   // 夹角标记线的颜色
             fontSize: 12,
