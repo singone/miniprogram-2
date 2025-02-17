@@ -43,6 +43,6 @@
   show="{{ showTest }}"
   actions="{{ actions }}"
   cancel-text="取消"
-  bind:close="handleClose"
+    bind:cancel="handleCancel"
   bind:select="handleSelect"
 />

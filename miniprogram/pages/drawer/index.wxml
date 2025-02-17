@@ -19,6 +19,9 @@ type="2d" />
         <image class="img" src="{{item.tempFilePath}}" />
         <van-icon bind:tap="handleClear" data-index="{{index}}" data-src="{{item.tempFilePath}}" class="img-clear" name="clear" />
     </view>
+    <view class="img-add-item" bind:tap="handleAdd">
+        <van-icon name="add" />
+    </view>
  </scroll-view>
 <view class="select-type {{isTest ? 'test-select-type' : ''}}">
     <view class="select-type-item">
@@ -104,6 +107,6 @@ type="2d" />
   actions="{{ actions }}"
   cancel-text="取消"
   z-index="10000"
-  bind:close="handleClose"
+  bind:cancel="handleCancel"
   bind:select="handleSelectPhoto"
 />

@@ -204,6 +204,7 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
     console.log(currentInfo.selectType);
     const option = {
       useCoarsePointer: true,
+      backgroundColor: 'transparent',
       graphic: {
         elements: [
           {

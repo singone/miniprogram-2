@@ -562,40 +562,73 @@ Page({
       showTest: false,
     })
   },
+  handleAdd(){
+    this.setData({
+      showTest: true,
+    })
+  },
   handleSelectPhoto(e){
     const {value} = e.detail;
+    const { isTest } = this.data;
     console.log(value);
     if (e.detail.value === 'photo') {
       wx.chooseMedia({
-        count: 1,
+        count: isTest ? 1 : 10,
         mediaType: ['image'],
         sourceType: ['album'],
         success: (res) => {
-          console.log(res);
-          this.goToTest(res.tempFiles[0]);
+          if (isTest) {
+            this.goToTest(res.tempFiles[0]);
+          } else {
+            this.addFile(res.tempFiles);
+          }
         },
       })
       return;
     } 
     if (e.detail.value === 'chat') {
       wx.chooseMessageFile({
-        count: 1,
+        count: isTest ? 1 : 10,
         type: 'image',
         success: (res) => {
-          this.goToTest({
-            tempFilePath: res.tempFiles[0].path,
-          });
+          if (isTest) {
+            this.goToTest({
+              tempFilePath: res.tempFiles[0].path,
+              duration: 0,
+              height: 0,
+              width: 0,
+              thumbTempFilePath: '',
+              size: res.tempFiles[0].size || 0,
+            });
+          } else {
+            this.addFile(res.tempFiles.map(item => ({
+              ...item,
+              tempFilePath: item.path,
+              duration: 0,
+              height: 0,
+              width: 0,
+              thumbTempFilePath: '',
+              size: item.size || 0,
+            }) as WechatMiniprogram.MediaFile));
+          }
         },
       });
     }
   },
-  goToTest(file) {
+  goToTest(file: WechatMiniprogram.MediaFile) {
     this.setData({
       currentUrl: file,
       showTest: false,
     })
     this.readImgInfo();
     this.drawImg();
+  },
+  addFile(files: WechatMiniprogram.MediaFile[]){
+    store.addFile(files);
+    this.setData({
+      files: store.files,
+      fileData: store.filesData,
+    });
   },
   handleClear(e){
     const {index, src} = e.currentTarget.dataset;

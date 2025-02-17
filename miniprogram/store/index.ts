@@ -46,9 +46,15 @@ export default {
             data: files,
         });
     },
+    addFile(files: WechatMiniprogram.MediaFile[]) {
+        this.files = [...this.files, ...files];
+        wx.setStorage({
+            key: 'files',
+            data: this.files,
+        })
+    },
     setFiles(files: WechatMiniprogram.MediaFile[]) {
         this.files = files;
-        this.filesData = {};
         this.clearFilesData();
         wx.setStorage({
             key: 'files',

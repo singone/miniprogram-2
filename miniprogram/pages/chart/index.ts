@@ -151,7 +151,7 @@ Page({
       showTest: true,
     })
   },
-  handleClose() {
+  handleCancel() {
     this.setData({
       showTest: false,
     })
