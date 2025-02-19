@@ -280,6 +280,7 @@ Page({
         const imgScale = widthScale < heightScale ? widthScale : heightScale;
         this.scale = 1;
           this.currentInfo = {
+            selectType: '',
             x: 0,
             y: 0,
             concentration: '',

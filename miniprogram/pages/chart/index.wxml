@@ -12,27 +12,47 @@
         <text>结果列表</text>
     </view>
     <view class="table-list">
+        <view class="table-list-header">
+            <view class="table-list-header-item row-checkbox">
+                <van-checkbox shape="square" value="{{isAllChecked}}" bind:change="handleSelectAll" />
+            </view>
+            <view class="table-list-header-item row-img">
+                <text>图片</text>
+            </view>
+            <view class="table-list-header-item row-concentration">
+                <text>浓度</text>
+            </view>
+            <view class="table-list-header-item row-angle">
+                <text>接触角</text>
+            </view>
+            <view class="table-list-header-item row-operation">
+                <text>操作</text>
+            </view>
+        </view>
         <view class="table-list-item"
          wx:for="{{files}}"
           wx:key="index">
-            <view class="table-list-item-title">
-                <image class="table-list-item-content-img" src="{{item.tempFilePath}}" mode="aspectFill"></image>
-                <view class="table-list-item-content-info">
-                    <text>浓度：{{item.concentration}} mol/L</text>
-                    <text>接触角：{{item.angle}}°</text>
-                </view>
+            <view class="table-list-item-row row-checkbox">
+                <van-checkbox shape="square" value="{{item.checked}}" data-index="{{index}}" data-item="{{item}}" bind:change="handleCheckItem" />
             </view>
-            <view class="table-list-item-content">
-                <view class="table-list-item-drawer">
-                    <ec-canvas data-index="{{index}}" data-item="{{item}}" class="chart" id="table-drawer-com-{{index}}" canvas-id="table-Chart-{{index}}" ec="{{ ecDrawer }}"></ec-canvas>
-                </view>
+            <view class="table-list-item-row row-img">
+                <image bind:tap="handleViewDetail" data-index="{{index}}" class="table-list-item-content-img" src="{{item.tempFilePath}}" mode="aspectFill"></image>
+            </view>
+            <view class="table-list-item-row row-concentration">
+                <text>{{item.concentration}} mol/L</text>
+            </view>
+            <view class="table-list-item-row row-angle">
+                <text>{{item.angle}}°</text>
+            </view>
+            <view class="table-list-item-row row-operation">
+                <view class="table-list-item-row-operation-btn" bindtap="handleViewResult">查看结果</view>
             </view>
         </view>
     </view>
 </scroll-view>
 <view class="footer">
     <view class="footer_left">
-        <van-button type="primary">保存图表</van-button>
+        <van-button type="primary" bindtap="handleSaveChart">保存图表</van-button>
     </view>
     <view class="footer_right">
         <van-button plain>分享结果</van-button>

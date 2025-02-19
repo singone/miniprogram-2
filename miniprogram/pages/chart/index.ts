@@ -17,12 +17,39 @@ Page({
       lazyLoad: true,
     },
     showTest: false,
+    isAllChecked: false,
     actions: [
       { name: '从相册选择', value: 'photo' },
       { name: '从聊天记录中选择', value: 'chat' },
     ],
   },
 
+  handleSelectAll(e) {
+    console.log(e);
+    this.setData({
+      isAllChecked: e.detail,
+      files: this.data.files.map(item => {
+        return {
+          ...item,
+          checked: e.detail,
+        }
+      }),
+    })
+  },
+  handleCheckItem(e) {
+    console.log(e);
+    const {index, item} = e.currentTarget.dataset;
+    const newFiles = this.data.files.map((item, idx) => {
+      return {
+        ...item,
+        checked: index === idx ? e.detail : item.checked,
+      }
+    });
+    this.setData({
+      files: newFiles,
+      isAllChecked: newFiles.every(item => item.checked),
+    })
+  },
   /**
    * 生命周期函数--监听页面加载
    */
@@ -35,6 +62,7 @@ Page({
       return {
         ...item,
         ...fileData,
+        checked: true,
         angle: Math.round(fileData.angle * 180 / Math.PI * 100)/100,
         concentration: fileData.concentration,
       }
@@ -42,6 +70,7 @@ Page({
     this.setData({
       fileData: store.filesData || {},
       files,
+      isAllChecked: files.every(item => item.checked),
       ecDrawer: {
         onInit: (canvas, width, height, dpr ) => {
           const index = canvas.canvasId.replace('table-Chart-', '');
@@ -71,6 +100,13 @@ Page({
     this.initChart();
   },
 
+  handleViewDetail(e) {
+    const {index} = e.currentTarget.dataset;
+    wx.previewImage({
+      current: index,
+      urls: this.data.files.map(item => item.tempFilePath),
+    })
+  },
   initChart() {
     if (this.chart) {
       return;
@@ -155,6 +191,17 @@ Page({
     this.setData({
       showTest: false,
     })
+  },
+  handleSaveChart() {
+    console.log('保存图表');
+    wx.saveImageToPhotosAlbum({
+      filePath: this.chart.getImage(),
+      success: () => {
+        wx.showToast({
+          title: '保存成功',
+        })
+      },
+    });
   },
   handleSelect(e) {
     console.log(e);

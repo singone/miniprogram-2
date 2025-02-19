@@ -1,15 +1,25 @@
 <!--index.wxml-->
-<van-nav-bar title="test" />
-<scroll-view class="scrollarea" scroll-y type="list">
-  <view class="button-item">
-    <van-button block bind:tap="handleSelect" type="primary">从相册选择图片</van-button>
+<view class="scrollarea">
+  <image class="bg-img" src="/images/bg-pic.png" mode="scaleToFill"></image>
+  <view class="title">
+    <text class="title-text">Contact Angle Analysis</text>
   </view>
   <view class="button-item">
-    <van-button block bind:tap="handleSelectChat" plain type="primary">从聊天记录选择图片</van-button>
+    <van-button block bind:tap="handleSelect" type="info">
+      <image class="icon-img" src="/images/icon-button-photo.png" mode="widthFix"></image>
+      从相册选择图片</van-button>
+  </view>
+  <view class="button-item">
+    <van-button block bind:tap="handleSelectChat" type="danger">
+      <image class="icon-img" src="/images/icon-button-chat.png" mode="widthFix"></image>
+      从聊天记录选择图片</van-button>
   </view>
   <block wx:if="files.length > 0">
     <view class="button-item">
-      <van-button block bind:tap="handleSelectResult" plain type="primary">查看上次结果</van-button>
+      <van-button block bind:tap="handleSelectResult" type="default">查看上次结果</van-button>
     </view>
   </block>
-</scroll-view>
+  <view class="footer">
+    <text> Developed by Gao Z.F.'s Group@ujn</text>
+  </view>
+</view>

@@ -1,0 +1,4 @@
+/* pages/chart/detail.wxss */
+.content{
+    height: 100%;
+}

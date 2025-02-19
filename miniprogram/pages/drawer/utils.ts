@@ -6,6 +6,10 @@ export const GROUP_ID = 'group';
 export const IMAGE_ID = 'image';
 export const LINE_ID = 'line';
 export const ELLIPSE_ID = 'ellipse';
+
+export const tramsformAngle = (angle: number) => {
+  return Math.round(angle * 180 / Math.PI * 100) / 100;
+}
 // 计算直线和椭圆的交点
 // line ax + by + c = 0
 export function findIntersection(ellipse, line) {
@@ -140,7 +144,7 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
           angleResult = (angle + angleResult ) / 2;
         }
         const startAngle = calculateAngle(m1, 0);
-        const showAngle = (angle * 180 / Math.PI).toFixed(2) + '°';
+        const showAngle = tramsformAngle(angle) + '°';
         if (index === 0) {
       
           return {
@@ -223,7 +227,7 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
                 originX: drawInfo.width / 2,
                 originY: currentInfo.img.height * currentInfo.img.imgScale / 2,
                 rotation: currentInfo.img.rotation,
-                style: {
+                style: {  
                   image: currentInfo.img.url,
                   width: drawInfo.width ,
                   height: currentInfo.img.height * currentInfo.img.imgScale,
@@ -341,7 +345,7 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
             fontSize: 12,
             x: tangent.fontX,
             y: tangent.fontY  ,
-            text: `${(tangent.angle * 180 / Math.PI).toFixed(2)}°`, 
+            text: `${tramsformAngle(tangent.angle)}°`, 
           },
       
           name: '内容'

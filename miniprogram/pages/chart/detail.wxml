@@ -1,0 +1,10 @@
+<!--pages/chart/detail.wxml-->
+<van-nav-bar title="结果详情" bind:click-left="handleBack" left-arrow="{{true}}" />
+<scroll-view scroll-y class="content">
+    <view class="chart-box">
+        <ec-canvas class="chart" id="chart-detail-com" canvas-id="myChart" ec="{{ ec }}"></ec-canvas>
+    </view>
+    <view class="chart-info">
+        <text>{{linear.expression}}</text>
+    </view>
+</scroll-view>

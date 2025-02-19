@@ -1,5 +1,7 @@
 {
   "disableScroll": true,
+  "navigationBarTitleText": "Contact Angle Analysis",
+  "navigationBarTextStyle": "white",
   "usingComponents": {
     "navigation-bar": "/components/navigation-bar/navigation-bar",
     "van-button": "@vant/weapp/button/index",
