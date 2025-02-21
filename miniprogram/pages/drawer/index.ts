@@ -1,7 +1,7 @@
 // pages/drawer/index.ts
 import store from "../../store/index"
 import * as echarts from '../../components/ec-canvas/echarts.min.js';
-import { ELLIPSE_ID, getDrawerData, LINE_ID, GROUP_ID, IMAGE_ID } from "./utils";
+import { ELLIPSE_ID, getDrawerData, LINE_ID, GROUP_ID, IMAGE_ID, tramsformAngle, getAngle, getWidth } from "./utils";
 import Touch from '../../utils/touch';
 
 Page({
@@ -33,6 +33,12 @@ Page({
         value: 'chat',
       },
     ],
+    sliderType: '',
+    sliderValue: 10,
+    defaultSliderValue: 10,
+    sliderMax: 100,
+    sliderMin: 0,
+    sliderStep: 1,
   },
   drawInfo: {
     width: 0,
@@ -84,6 +90,19 @@ Page({
     this.readImgInfo();
     this.drawImg();
   },
+  defaultValue: {
+    x: 0,
+    y: 0,
+    rotation: 0,
+    cx: 0,
+    cy: 0,
+    rx: 0,
+    ry: 0,
+    x1: 0,
+    y1: 0,
+    x2: 0,
+    y2: 0,
+  },
   initChart() {
     if (this.chart) {
       return;
@@ -105,7 +124,7 @@ Page({
           console.log(e);
         },
         pressMove: (e) => {
-          // console.log(e);
+          console.log(e);
         },
         
       });
@@ -120,7 +139,6 @@ Page({
       this.canvas = canvas;
       this.readImgInfo();
   
-      console.log(canvas, width, height, dpr)
       // const session = this.session = wx.createVKSession({
       //   track: {
       //     depth: {
@@ -155,6 +173,7 @@ Page({
           $page.setData({
             selectType: 'ellipse',
           })
+          $page.initSlider();
           $page.drawImg();
           return;
         }
@@ -163,6 +182,7 @@ Page({
           $page.setData({
             selectType: 'line',
           })
+          $page.initSlider();
           $page.drawImg();
           return;
         }
@@ -170,7 +190,9 @@ Page({
           $page.currentInfo.selectType = 'image';
           $page.setData({
             selectType: 'image',
-          })
+          }) 
+          $page.initSlider();
+          $page.drawImg();
           return;
         }
       })
@@ -186,9 +208,10 @@ Page({
       });
       chart.on('mousemove', function(params) {
         $page.touch.move(params.event.which);
-        if (!moveId || $page.currentInfo.selectType) {
+        if (!moveId) {
           return;
         }
+        console.log(moveId)
         const offsetX = (params.event.offsetX - startX) / $page.scale / $page.drawInfo.dpr;
         const offsetY = (params.event.offsetY - startY) / $page.scale / $page.drawInfo.dpr;
         startX = params.event.offsetX;
@@ -296,9 +319,9 @@ Page({
             y: 0,
           },
           line: {
-            x1: 0,
+            x1: 10,
             y1: res.height * imgScale * 0.55,
-            x2: res.width,
+            x2: this.drawInfo.width - 20,
             y2: res.height * imgScale * 0.50,
             rotation: 0,
           },
@@ -321,9 +344,140 @@ Page({
     const $page = this;
     const {option, angle} = getDrawerData($page.currentInfo, $page.drawInfo,  $page.scale);
     $page.currentInfo.angle = angle;
+    this.setData({
+      angle: tramsformAngle(angle),
+    })
     $page.changeValue();
     $page.chart.setOption(option);
 
+  },
+  handleSlider(e){
+    this.setData({
+      sliderValue: e.detail,
+    });
+    this.dealSlider();
+  },
+  handleReset(){
+    this.setData({
+      sliderValue: this.data.defaultSliderValue,
+    });
+    this.dealSlider();
+  },
+  dealSlider(){
+    const {sliderType} = this.data;
+    switch(sliderType){
+      case 'horizontal-move':
+        this.dealMoveHorizontal();
+        break;
+      case 'vertical-move':
+        this.dealMoveVertical();
+        break;
+      case 'rotate':
+        this.dealRotate();
+        break;
+      case 'horizontal-scale':
+        this.dealScaleHorizontal();
+        break;
+      case 'vertical-scale':
+        this.dealScaleVertical();
+        break;
+      default:
+        break;
+    }
+  },
+  dealMoveHorizontal(){
+    const {sliderValue, selectType, defaultSliderValue} = this.data;
+    const changeNum = sliderValue - defaultSliderValue;
+    switch(selectType){
+      case 'line':
+        this.currentInfo.line.x1 = this.defaultValue.x1 + 1 * changeNum;
+        this.currentInfo.line.x2 = this.defaultValue.x2 + 1 * changeNum;
+        break;
+      case 'ellipse':
+        this.currentInfo.ellipse.cx = this.defaultValue.cx + 1 * changeNum;
+        break;
+      case 'image':
+        this.currentInfo.x = this.defaultValue.x + 1 * changeNum;
+        break;
+      default:
+        this.currentInfo.x = this.defaultValue.x + 1 * changeNum;
+
+        break;
+    }
+    this.drawImg();
+  },
+  dealMoveVertical(){
+    const {sliderValue, selectType, defaultSliderValue} = this.data;
+    const changeNum = sliderValue - defaultSliderValue;
+    switch(selectType){
+      case 'line':
+        this.currentInfo.line.y1 = this.defaultValue.y1 + 1 * changeNum;
+        this.currentInfo.line.y2 = this.defaultValue.y2 + 1 * changeNum;
+        break;
+      case 'ellipse':
+        this.currentInfo.ellipse.cy = this.defaultValue.cy + 1 * changeNum;
+        break;
+      default:
+        this.currentInfo.y = this.defaultValue.y + 1 * changeNum;
+        break;
+    }
+    this.drawImg();
+  },
+  dealRotate(){
+    const {sliderValue, selectType, defaultSliderValue} = this.data;
+    const changeNum = sliderValue - defaultSliderValue;
+    const rotation = (this.defaultValue.rotation + 1 * changeNum) * Math.PI / 180;
+
+    switch(selectType){
+      case 'line':
+        console.log(rotation, this.defaultValue.width, Math.cos(rotation), Math.sin(rotation));
+        this.currentInfo.line.x1 = this.defaultValue.x - Math.cos(rotation) * this.defaultValue.width / 2;
+        this.currentInfo.line.y1 = this.defaultValue.y - Math.sin(rotation) * this.defaultValue.width / 2;
+        this.currentInfo.line.x2 = this.defaultValue.x + Math.cos(rotation) * this.defaultValue.width / 2;
+        this.currentInfo.line.y2 = this.defaultValue.y + Math.sin(rotation) * this.defaultValue.width / 2;
+        console.log(this.currentInfo.line);
+        break;
+      case 'ellipse':
+        this.currentInfo.ellipse.rotation = (this.defaultValue.rotation + 1 * changeNum) * Math.PI / 180;
+        break;
+      default:
+        this.currentInfo.img.rotation = (this.defaultValue.rotation + 1 * changeNum) * Math.PI / 180;
+        break;
+    }
+    this.drawImg();
+  },
+  dealScaleHorizontal(){
+    const {sliderValue, selectType, defaultSliderValue} = this.data;
+    const changeNum = sliderValue - defaultSliderValue;
+    console.log(changeNum, selectType);
+    switch(selectType){
+      case 'line':
+        this.currentInfo.line.width = this.defaultValue.width + 1 * changeNum;
+        break;
+      case 'ellipse':
+        this.currentInfo.ellipse.rx = this.defaultValue.rx + 1 * changeNum;
+        break;
+      default:
+        this.currentInfo.x = this.defaultValue.x + 1 * changeNum;
+        break;
+    }
+    this.drawImg();
+  },
+  dealScaleVertical(){
+    const {sliderValue, selectType, defaultSliderValue} = this.data;
+    const changeNum = sliderValue - defaultSliderValue;
+    switch(selectType){
+      case 'line':
+        this.currentInfo.line.height = this.currentInfo.line.height + 1 * changeNum;
+        break;
+      case 'ellipse':
+        this.currentInfo.ellipse.ry = this.currentInfo.ellipse.ry + 1 * changeNum;
+        break;
+      default:
+        this.scale = this.defaultValue.scale + changeNum;
+        break;
+    } 
+    this.drawImg();
   },
   dealEllipse(type){
     console.log(type);
@@ -435,29 +589,214 @@ Page({
 
   handleSelectType(e){
     const {type} = e.currentTarget.dataset;
-    const {selectType} = this.data;
-    switch(selectType){ 
-      case 'ellipse':
-        this.dealEllipse(type);
+  
+    this.setData({
+      sliderType: type,
+    });
+    this.initSlider();
+  },
+  initSlider(){
+    const {sliderType} = this.data;
+    switch(sliderType){
+      case 'horizontal-move':
+        this.sliderInitHorizontalMove();
         break;
-      case 'image':
-        this.dealImage(type);
+      case 'vertical-move':
+        this.sliderInitVerticalMove();
         break;
-      case 'line':
-        this.dealLine(type);
+      case 'rotate':
+        this.sliderInitRotate();
+        break;
+      case 'horizontal-scale':
+        this.sliderInitHorizontalScale();
+        break;
+      case 'vertical-scale':
+        this.sliderInitVerticalScale();
         break;
       default:
-        this.dealBox(type);
         break;
     }
   },
-  handleSelectNum(e){
-    const {type} = e.currentTarget.dataset;
+  sliderInitHorizontalMove(){
+    const { selectType } = this.data;
+    let defaultSliderValue = 1;
+    let sliderStep = 1;
+    let sliderMax = this.drawInfo.width;
+    let sliderMin = -sliderMax;
+    switch(selectType){
+      case 'line':
+        this.defaultValue = {
+          x1: this.currentInfo.line.x1,
+          x2: this.currentInfo.line.x2,
+        };
+        defaultSliderValue = Math.round((this.currentInfo.line.x2 - this.currentInfo.line.x1) / 2);
+        break;
+      case 'ellipse':
+        this.defaultValue = {
+          cx: this.currentInfo.ellipse.cx,
+          cy: this.currentInfo.ellipse.cy,
+        };
+        defaultSliderValue = this.currentInfo.ellipse.cx;
+        break;
+      default:
+        this.defaultValue = {
+          x: this.currentInfo.x,
+          y: this.currentInfo.y,
+        };
+        defaultSliderValue = this.currentInfo.x;
+        break;
+    }
     this.setData({
-      changeNum: type,
-    })
+      sliderStep,
+      defaultSliderValue,
+      sliderMax,
+      sliderMin,
+      sliderValue: defaultSliderValue,
+    });
   },
+  sliderInitVerticalMove(){
+    const { selectType } = this.data;
+    let defaultSliderValue = 1;
+    let sliderStep = 1;
+    let sliderMax = this.drawInfo.height;
+    let sliderMin = -this.drawInfo.height;
+    switch(selectType){
+      case 'line':  
+        this.defaultValue = {
+          y1: this.currentInfo.line.y1,
+          y2: this.currentInfo.line.y2,
+        };
+        defaultSliderValue = Math.round((this.currentInfo.line.y2 - this.currentInfo.line.y1) / 2);
+        break;
+      case 'ellipse':
+        this.defaultValue = {
+          cy: this.currentInfo.ellipse.cy,
+          ry: this.currentInfo.ellipse.ry,
+        };
+        defaultSliderValue = Math.round(this.currentInfo.ellipse.cy);
+        break;
+      default:
+        this.defaultValue = {
+          x: this.currentInfo.x,
+          y: this.currentInfo.y,
+        };
+        defaultSliderValue = Math.round(this.currentInfo.y);
+        break;
 
+    }
+    this.setData({
+      sliderStep,
+      defaultSliderValue,
+      sliderMax,
+      sliderMin,
+      sliderValue: defaultSliderValue,
+    }); 
+  },
+  sliderInitRotate(){
+    let defaultSliderValue = 0;
+ 
+    const { selectType } = this.data;
+    switch(selectType){
+      case 'line':
+        console.log(this.currentInfo.line);
+        defaultSliderValue = Math.round(tramsformAngle(getAngle(this.currentInfo.line.x1, this.currentInfo.line.y1, this.currentInfo.line.x2, this.currentInfo.line.y2)));
+        this.defaultValue = {
+          rotation: defaultSliderValue,
+          x1: this.currentInfo.line.x1,
+          width: getWidth(this.currentInfo.line.x1, this.currentInfo.line.y1, this.currentInfo.line.x2, this.currentInfo.line.y2),
+          x2: this.currentInfo.line.x2,
+          y1: this.currentInfo.line.y1,
+          y2: this.currentInfo.line.y2,
+          x: (this.currentInfo.line.x1 + this.currentInfo.line.x2) / 2,
+          y: (this.currentInfo.line.y1 + this.currentInfo.line.y2) / 2,
+        };
+        break;
+      default:
+        defaultSliderValue = Math.round(tramsformAngle(this.currentInfo.img.rotation));
+
+        this.defaultValue = {
+          rotation: defaultSliderValue,
+        };
+        break;
+    }
+    this.setData({
+      sliderStep: 1,
+      defaultSliderValue,
+      sliderMax: 90,
+      sliderMin: -90,
+      sliderValue: 0,
+    });
+  },
+  sliderInitHorizontalScale(){
+    const { selectType } = this.data;
+    let defaultSliderValue = 1;
+    let sliderStep = 0.1;
+    let sliderMax = 10;
+    let sliderMin = 0;
+    switch(selectType){
+      case 'line':
+        this.defaultValue = {
+          width: this.currentInfo.line.width,
+        };
+        break;
+      case 'ellipse':
+        this.defaultValue = {
+          rx: this.currentInfo.ellipse.rx,
+        };
+        console.log(this.currentInfo.ellipse, this.drawInfo.width);
+        defaultSliderValue = Math.round(this.currentInfo.ellipse.rx);
+        sliderMax = 100;
+        sliderMin = 0;
+        sliderStep = 1;
+        break;
+    }
+    this.setData({
+      sliderStep,
+      defaultSliderValue,
+      sliderMax,
+      sliderMin,
+      sliderValue: defaultSliderValue,
+    });
+  },
+  sliderInitVerticalScale(){
+    const { selectType } = this.data;
+    let defaultSliderValue = 1;
+    let sliderStep = 0.1;
+    let sliderMax = 10;
+    let sliderMin = 0;
+    switch(selectType){
+      case 'line':
+        this.defaultValue = {
+          width: this.currentInfo.line.width,
+        };
+        break;
+      case 'ellipse':
+        this.defaultValue = {
+          ry: this.currentInfo.ellipse.ry,
+        };
+        defaultSliderValue = Math.round(this.currentInfo.ellipse.ry);
+        sliderMax = 100;
+        sliderMin = 0;
+        sliderStep = 1;
+        break;
+      default:
+        this.defaultValue = {
+          scale: this.scale,
+        };
+        sliderMax = 10;
+        sliderMin = 0;
+        sliderStep = 0.1;
+        defaultSliderValue = Math.round(this.scale * 10) / 10;
+        break;
+    }
+    this.setData({
+      sliderStep,
+      defaultSliderValue,
+      sliderMax,
+      sliderMin,
+      sliderValue: defaultSliderValue,
+    });
+  },
   handleChangeConcentration(){
     const $page = this;
     wx.navigateTo({
@@ -478,6 +817,7 @@ Page({
       return;
     }
     this.setData({
+      selectType: '',
       selectedIndex: selectedIndex - 1,
       currentUrl: files[selectedIndex - 1],
     });
@@ -490,6 +830,7 @@ Page({
       return;
     }
     this.setData({
+      selectType: '',
       selectedIndex: selectedIndex + 1,
       currentUrl: files[selectedIndex + 1],
     });

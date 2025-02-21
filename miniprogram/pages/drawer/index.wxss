@@ -3,69 +3,132 @@ page{
     display: flex;
     flex-direction: column;
 }
-
-.canvas{
+.canvas-container{
     flex: 1;
-    border: 1px solid #eee;
+    display: flex;
+    position: relative;
+    flex-direction: column;
+}
+.canvas-arrow_container{
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+.canvas-arrow_left{
+    position: absolute;
+    top: 20%;
+    left: 10px;
+    width: 40px;
+    height: 40px;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    z-index: 10;
+}
+.canvas-arrow_right{
+    position: absolute;
+    top: 20%;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+}
+.canvas{
+    position: relative;
+    flex: 1;
+    border-bottom: 1px solid #eee;
 }
 
 .img-item{
     border: 2px solid transparent;
-    width: 50px;
-    height: 50px;
+    width: 45px;
+    height: 45px;
     margin-left: 12px;
-    padding: 3px;
+    margin-top: 12px;
     box-sizing: border-box;
     position: relative;
+    border-radius: 10px;
 }
 .img-item.selected{
     border-color: var(--drawer-color-primary);
 }
-.img-item.complete{
-    border-color: var(--drawer-color-success);
-}
+
 .img-add-item{
-    width: 50px;
-    height: 50px;
-    border: 2px solid #eee;
+    width: 45px;
+    height: 45px;
+    background-color: #EBEDF0;
     border-radius: 10px;
     margin-left: 12px;
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 60rpx;
+    margin-top: 12px;
+}
+.img-add{
+    width: 20px;
+    height: 20px;
+}
+.img-selected{
+    position: absolute;
+    bottom: 0;
+    left: -1px;
+    width: 16px;
+    height: 12px;
+    border-bottom-left-radius: 10px;
 }
 .img-clear{
     position: absolute;
-    top: -3px;
-    right: -3px;
-    font-size: 32rpx;
-    color: var(--drawer-color-danger);
+    top: -6px;
+    right: -6px;
+    padding: 3px;
+    font-size: 10px;
+    color: #000;
+    background-color: #EBEDF0;
+    border-radius: 50%;
 }
 .img{
-    width: 40px;
-    height: 40px;
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
 }
 .scroll{
+    border-bottom: 1px solid #eee;
     display: flex;
-    padding: 5px 10px;
+    padding: 0 10px;
 }
 .footer{
     display: flex;
-    padding:  12px;
-    margin-top: 12px;
-    box-shadow: 0 -4px 4px #eee;
+    padding: 20px 12px;
 }
 .footer_left{
     flex: 1;
+    width: 0;
 }
 .footer_right{
     display: flex;
-}
-.footer_right .van-button{
     flex: 1;
-    margin-left: 8px;
-    width: auto;
+    width: 0;
+    margin-left: 12px;
+}
+.footer_left .btn,
+.footer_right .btn{
+    width: 100%;
+    flex: 1;
+}
+.footer_left .van-button,
+.footer_right .van-button{
+    width: 100%;
 }
 .content{
     flex: 1;
@@ -88,15 +151,51 @@ page{
 .select-type-item{
     display: flex;
     height: 100rpx;
+    padding: 0 10px;
 }
 .select-type-item-text{
-    background-color: #eee;
     margin: 5px;
-    padding: 5px 10px;
-    border-radius: 10px;
-
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 24rpx;
+    justify-content: center;
+    font-weight: 600;
 }
 .select-type-item-text.selected{
-    background-color: var(--drawer-color-primary);
-    color: #fff;
+    color: var(--drawer-color-primary);
 }
+.select-type-item-img{
+    width: 24px;
+    height: 24px;
+}
+.value-container{
+    display: flex;
+    align-items: center;
+    padding: 14px 20px;
+    background-color: #eee;
+    font-size: 16px;
+    color: #333;
+    border-radius: 10px;
+    margin: 12px 12px 0;
+    border: 1px solid #e1e1e1;
+}
+.slider-container{
+    display: flex;
+    align-items: center;
+    padding: 20px 12px;
+}
+.slider-content{
+    flex: 1;
+}
+.slider-value{
+    width: 100rpx;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    color: #333;
+}
+
+    

@@ -6,9 +6,27 @@ export const GROUP_ID = 'group';
 export const IMAGE_ID = 'image';
 export const LINE_ID = 'line';
 export const ELLIPSE_ID = 'ellipse';
-
+export const TANGENT_LINE_ID = 'tangent_line';
+export const TANGENT_ARC_ID = 'tangent_arc';
+export const TANGENT_TEXT_ID = 'tangent_text';
 export const tramsformAngle = (angle: number) => {
   return Math.round(angle * 180 / Math.PI * 100) / 100;
+}
+export const getWidth = (x1: number, y1: number, x2: number, y2: number) => {
+  return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
+}
+export const tramsformAngleToRadian = (angle: number) => {
+  return angle * Math.PI / 180;
+}
+export const getAngle = (x1: number, y1: number, x2: number, y2: number) => {
+  if (x1 === x2) {
+    return 0;
+  }
+  if (y1 === y2) {
+    return Math.PI / 2;
+  }
+  const k = (y2 - y1) / (x2 - x1);
+  return Math.atan(k);
 }
 // 计算直线和椭圆的交点
 // line ax + by + c = 0
@@ -134,8 +152,15 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
       // 获取直线的斜率
         const m1 = (currentInfo.line.y2 - currentInfo.line.y1) / (currentInfo.line.x2 - currentInfo.line.x1);
       let angleResult = 0;
+
       // 计算夹角的位置
-      const tangentArcs = intersections.map((p, index) => {
+      const tangentArcs = [0, 1].map((index) => {
+        const p = intersections[index];
+        if (!p) {
+          return {
+            invisible: true,
+          }
+        }
         const m2 = tangentSlope(currentInfo.ellipse, p.x, p.y);
         const angle = calculateAngle(m1, m2);
         if (!angle) {
@@ -148,6 +173,7 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
         if (index === 0) {
       
           return {
+            invisible: p.invisible,
             x: p.x,
             y: p.y,
             fontX: p.x + 10,
@@ -172,7 +198,13 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
         }
       })
     // 更新每个交点的切线斜率与夹角
-    const tangentLines = intersections.map((p, index) => {
+    const tangentLines = [0, 1].map((index) => {
+        const p = intersections[index];
+        if (!p) {
+          return {
+            invisible: true,
+          }
+        }
         const m2 = tangentSlope(currentInfo.ellipse, p.x, p.y);
         const angle = calculateAngle(m1, m2);
 
@@ -301,9 +333,12 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
             //       name: '交点'
             //   },
               // 切线的绘制
-            ...tangentLines.map(tangent => ({
+            ...tangentLines.map((tangent, index) => ({
               type: 'line',
+              invisible: tangent.invisible,
               silent: true,
+              id: TANGENT_LINE_ID + '_' + index,
+            
               shape: {
                   x1: tangent.x1,
                   y1: tangent.y1,
@@ -318,9 +353,11 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
               name: '切线'
           })),
           // 夹角标记（虚弧线）
-          ...tangentArcs.map(tangent => ({
+          ...tangentArcs.map((tangent, index) => ({
             type: 'arc',
+            invisible: tangent.invisible,
             silent: true,
+            id: TANGENT_ARC_ID + '_' + index,
             shape: {
               cx: tangent.x,
               cy: tangent.y,
@@ -337,9 +374,11 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
             name: '夹角标记线'
         })),
          // 夹角标记（虚弧线）
-         ...tangentArcs.map(tangent => ({
+         ...tangentArcs.map((tangent, index) => ({
           type: 'text', 
           silent: true,
+          invisible: tangent.invisible,
+          id: TANGENT_TEXT_ID + '_' + index,
           style: {
             fill: 'green',   // 夹角标记线的颜色
             fontSize: 12,

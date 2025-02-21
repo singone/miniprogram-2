@@ -1,4 +1,7 @@
 // pages/chart/detail.ts
+import * as echarts from '../../components/ec-canvas/echarts.min.js';
+import store from '../../store/index';
+import { getDrawerData } from '../drawer/utils.js';
 Page({
 
   /**
@@ -18,6 +21,30 @@ Page({
    */
   onLoad(options) {
     console.log(options);
+    const index = options.index;
+    const item = store.files[index];
+    console.log(item, index);
+    const currentInfo = store.filesData[item.tempFilePath];
+    console.log(currentInfo);
+    if (!currentInfo) { 
+      return;
+    }
+    this.drawCom = this.selectComponent('#chart-detail-com');
+    this.drawCom.init((canvas, width, height, dpr) => {
+    console.log(currentInfo, canvas, width, height, dpr);
+
+      const chart = echarts.init(canvas, null, {
+        width: width,
+        height: height,
+        devicePixelRatio: dpr // new
+      });
+      const {option} = getDrawerData(currentInfo, {
+        width: width,
+        height: height,
+          dpr: dpr,
+        }, 1);
+      chart.setOption(option);
+    });
   },
 
   /**

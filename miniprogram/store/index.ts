@@ -1,6 +1,8 @@
 
 type Store = {
-    files: WechatMiniprogram.MediaFile[]
+    files: (WechatMiniprogram.MediaFile & {
+        checked?: boolean
+    })[]
     filesData: Record<string, any>
     setFilesData(data: Record<string, any>): void
     removeFile(src: string): void

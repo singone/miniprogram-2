@@ -2,3 +2,9 @@
 .content{
     height: 100%;
 }
+.chart-box{
+    height: 200px;
+    background-color: #fff;
+    margin: 10px;
+    border-radius: 10px;
+}
