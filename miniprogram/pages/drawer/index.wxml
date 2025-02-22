@@ -43,13 +43,20 @@
         <text>平均接触角：{{angle ||'--'}}°</text>
     </view>
     <view class="slider-container">
-        <view class="slider-content">
-          <van-slider value="{{sliderValue}}" bind:change="handleSlider" max="{{sliderMax}}" min="{{sliderMin}}" />
+        <view class="slider-content"> 
+            <scroll-view class="slider-content_scroll" enable-flex="{{true}}" scroll-x="{{true}}" scroll-y="{{false}}" style="height: 60px;">
+                <view class="slider-item" wx:for="{{sliderList}}" wx:key="index">
+                    <view class="slider-item-value {{index % 5 === 0 ? 'slider-item-value-total' : ''}}"></view>
+                </view>
+            </scroll-view>
         </view>
+
         <view class="slider-value">
             <van-icon bind:tap="handleReset" name="replay" />
         </view>
     </view>
+          <van-slider value="{{sliderValue}}" step="{{sliderStep}}" bind:change="handleSlider" max="{{sliderMax}}" min="{{sliderMin}}" />
+
       <view class="select-type-item">
             <view data-type="horizontal-move" bind:tap="handleSelectType" class="select-type-item-text {{sliderType === 'horizontal-move' ? 'selected' : ''}}">
                 <image class="select-type-item-img" wx:if="{{sliderType === 'horizontal-move'}}" src="/images/icon-leftMove-selected.png" />

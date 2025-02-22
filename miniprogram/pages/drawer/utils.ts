@@ -9,14 +9,21 @@ export const ELLIPSE_ID = 'ellipse';
 export const TANGENT_LINE_ID = 'tangent_line';
 export const TANGENT_ARC_ID = 'tangent_arc';
 export const TANGENT_TEXT_ID = 'tangent_text';
-export const tramsformAngle = (angle: number) => {
+export const RECT_ID = 'rect';
+export const transformAngle = (angle: number) => {
   return Math.round(angle * 180 / Math.PI * 100) / 100;
 }
 export const getWidth = (x1: number, y1: number, x2: number, y2: number) => {
   return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
 }
-export const tramsformAngleToRadian = (angle: number) => {
+export const transformAngleToRadian = (angle: number) => {
   return angle * Math.PI / 180;
+}
+export const getLineSlope = (x1: number, y1: number, x2: number, y2: number) => {
+  if (x1 === x2) {
+    return Infinity;
+  }
+  return (y2 - y1) / (x2 - x1);
 }
 export const getAngle = (x1: number, y1: number, x2: number, y2: number) => {
   if (x1 === x2) {
@@ -122,14 +129,14 @@ export function calculateAngle(m1, m2) {
         if (m2 === 0) {
             return Math.PI / 2; // 垂直线与水平线的夹角为 90 度
         } else {
-            return Math.abs(Math.atan(Math.abs(1 / m2)));
+            return Math.atan(Math.abs(1 / m2));
         }
     }
     if (m2 === Infinity || m2 === -Infinity) {
         if (m1 === 0) {
             return Math.PI / 2; // 垂直线与水平线的夹角为 90 度
         } else {
-            return Math.abs(Math.atan(Math.abs(1 / m1)));
+            return Math.atan(Math.abs(1 / m1));
         }
     }
 
@@ -138,7 +145,7 @@ export function calculateAngle(m1, m2) {
         return Math.PI / 2; // 垂直，夹角为 90 度
     }
 
-    const tanTheta = Math.abs((m2 - m1) / (1 + m1 * m2));
+    const tanTheta = (m2 - m1) / (1 + m1 * m2);
     const thetaRadians = Math.atan(tanTheta);
     const thetaDegrees = (thetaRadians);
 
@@ -150,7 +157,7 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
   const normalColor = '#909399';
     const intersections = findIntersection(currentInfo.ellipse, currentInfo.line);
       // 获取直线的斜率
-        const m1 = (currentInfo.line.y2 - currentInfo.line.y1) / (currentInfo.line.x2 - currentInfo.line.x1);
+        const m1 = getLineSlope(currentInfo.line.x1, currentInfo.line.y1, currentInfo.line.x2, currentInfo.line.y2);
       let angleResult = 0;
 
       // 计算夹角的位置
@@ -162,25 +169,39 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
           }
         }
         const m2 = tangentSlope(currentInfo.ellipse, p.x, p.y);
-        const angle = calculateAngle(m1, m2);
-        if (!angle) {
+        let angle = calculateAngle(m1, m2);
+        let isClockwise = true;
+        if (angle < 0) {
+          if (p.x < currentInfo.ellipse.cx) {
+            angle = -angle;
+          } else {
+            angle = Math.PI + angle;
+          }
+          isClockwise = false;
+
+        } else {
+          if (p.x < currentInfo.ellipse.cx) {
+            angle = Math.PI - angle;
+          }
+          isClockwise = true;
+        }
+        if (!angleResult) {
           angleResult = angle;
         } else {
           angleResult = (angle + angleResult ) / 2;
         }
         const startAngle = calculateAngle(m1, 0);
-        const showAngle = tramsformAngle(angle) + '°';
+        const showAngle = transformAngle(angle) + '°';
         if (index === 0) {
       
           return {
-            invisible: p.invisible,
             x: p.x,
             y: p.y,
             fontX: p.x + 10,
             fontY: p.y - 20,
-            clockwise: false,
-            startAngle: startAngle,
-            endAngle: -angle,
+            clockwise: true,
+            startAngle: startAngle + Math.PI,
+            endAngle: angle + Math.PI,
             angle: angle,
             showAngle: showAngle,
           }
@@ -188,10 +209,10 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
         return {
           x: p.x,
           y: p.y,
-          fontX: p.x - 40,
-          fontY: p.y - 20,
-          clockwise: true,
-          startAngle: startAngle + Math.PI,
+          fontX: p.x - 5 ,
+          fontY: p.y - 25,
+          clockwise: false,
+          startAngle: startAngle,
           endAngle: -angle,
           angle: angle,
           showAngle: showAngle,
@@ -237,7 +258,21 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
             angle: angle
         };
     });
-    console.log(currentInfo.selectType);
+    let tools = {}
+    if (currentInfo.selectType === 'ellipse') {
+      tools = {
+        x: currentInfo.ellipse.cx - currentInfo.ellipse.rx,
+        y: currentInfo.ellipse.cy - currentInfo.ellipse.ry,
+        width: currentInfo.ellipse.rx * 2,
+        height: currentInfo.ellipse.ry * 2,
+      };
+    } else if (currentInfo.selectType === 'line') {
+      tools = {
+        x: 0,
+        y: 0,
+        width: Math.min(drawInfo.width - 10, Math.max(Math.abs(currentInfo.line.x2 - currentInfo.line.x1), 20)),
+      };
+    }
     const option = {
       useCoarsePointer: true,
       backgroundColor: 'transparent',
@@ -250,19 +285,21 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
             y: currentInfo.y,
             scaleX: scale,
             scaleY: scale,
+            originX: currentInfo.originX,
+            originY: currentInfo.originY,
             children: [
               {
                 type: 'image',
                 id: IMAGE_ID,
                 x: currentInfo.img.x,
                 y: currentInfo.img.y,
-                originX: drawInfo.width / 2,
-                originY: currentInfo.img.height * currentInfo.img.imgScale / 2,
+                originX: currentInfo.img.showWidth / 2,
+                originY: currentInfo.img.showHeight / 2,
                 rotation: currentInfo.img.rotation,
                 style: {  
                   image: currentInfo.img.url,
-                  width: drawInfo.width ,
-                  height: currentInfo.img.height * currentInfo.img.imgScale,
+                  width: currentInfo.img.showWidth ,
+                  height: currentInfo.img.showHeight,
                 },
               },
               {
@@ -278,49 +315,27 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
                 },
                 style: {
                   lineWidth: 1,
-                  stroke: currentInfo.selectType === 'line' ? selectedColor : normalColor,
+                  stroke: '#3173FA',
                 },
               },
               {
-                type: 'group',
+                type: 'ellipse',
                 id: ELLIPSE_ID,
                 x: currentInfo.ellipse.cx - currentInfo.ellipse.rx,
                 y: currentInfo.ellipse.cy - currentInfo.ellipse.ry,
                 originX: currentInfo.ellipse.rx,
                 originY: currentInfo.ellipse.ry,
-                children: [
-                  {
-                    type: 'ellipse',
-                    id: ELLIPSE_ID + '_ellipse',
-                    shape: {
-                      cx: currentInfo.ellipse.rx, // 椭圆中心的 x 坐标
-                      cy: currentInfo.ellipse.ry, // 椭圆中心的 y 坐标
-                      rx: currentInfo.ellipse.rx, // 椭圆的 x 轴半径
-                      ry: currentInfo.ellipse.ry,   // 椭圆的 y 轴半径
-                    },
-                    style: {
-                      fill: 'transparent', // 填充颜色
-                      stroke: currentInfo.selectType === 'ellipse' ? selectedColor : normalColor,    // 边框颜色
-                      lineWidth: 1,       // 边框宽度
-                    },
-                  },
-                  ...[[currentInfo.ellipse.rx, 0, 'right'], [-currentInfo.ellipse.rx, 0, 'left'], [0, currentInfo.ellipse.ry, 'bottom'], [0, -currentInfo.ellipse.ry, 'top']].map((p) => ({
-                    type: 'circle',
-                    id: ELLIPSE_ID + '_ellipse_circle_' + p[2],
-                    shape: {
-                      cx: p[0] + currentInfo.ellipse.rx,
-                      cy: p[1] + currentInfo.ellipse.ry,
-                      r: 3,
-                    },
-                    invisible: currentInfo.selectType !== 'ellipse',
-                    style: {
-                      stroke: selectedColor, // 填充颜色
-                      fill: '#eee', // 填充颜色
-                      lineWidth: 2,       // 边框宽度
-                    },
-                  }))
-                ],
-             
+                shape: {
+                  cx: currentInfo.ellipse.rx, // 椭圆中心的 x 坐标
+                  cy: currentInfo.ellipse.ry, // 椭圆中心的 y 坐标
+                  rx: currentInfo.ellipse.rx, // 椭圆的 x 轴半径
+                  ry: currentInfo.ellipse.ry,   // 椭圆的 y 轴半径
+                },
+                style: {
+                  fill: 'transparent', // 填充颜色
+                  stroke: '#FF4500',    // 边框颜色
+                  lineWidth: 1.5,       // 边框宽度
+                },
               },
             // // 交点标记
             //   {
@@ -346,9 +361,9 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
                   y2: tangent.y2
               },
               style: {
-                  stroke: normalColor,  // 切线的颜色
+                  stroke: '#FF4500',  // 切线的颜色
                   lineWidth: 1,
-                  lineDash: [5, 5]  // 虚线
+                  lineDash: [2, 2]  // 虚线
               },
               name: '切线'
           })),
@@ -367,12 +382,12 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
                 endAngle: tangent.endAngle,
             },
             style: {
-                stroke: normalColor,   // 夹角标记线的颜色
+                stroke: '#FF4500',   // 夹角标记线的颜色
                 lineWidth: 1,
-                lineDash: [2, 2]   // 虚线
+                lineDash: [1, 1]   // 虚线
             },
             name: '夹角标记线'
-        })),
+        })), 
          // 夹角标记（虚弧线）
          ...tangentArcs.map((tangent, index) => ({
           type: 'text', 
@@ -380,21 +395,113 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
           invisible: tangent.invisible,
           id: TANGENT_TEXT_ID + '_' + index,
           style: {
-            fill: 'green',   // 夹角标记线的颜色
+            fill: '#FF4500',   // 夹角标记线的颜色
             fontSize: 12,
             x: tangent.fontX,
             y: tangent.fontY  ,
-            text: `${tramsformAngle(tangent.angle)}°`, 
+            text: `${transformAngle(tangent.angle)}°`, 
           },
-      
           name: '内容'
       })),
-            ],
+      {
+        type: 'group',
+        id: RECT_ID,
+        ignore: !tools.width,
+        x: tools.x,
+        y: tools.y,
+        $action:'replace',
+        children:  currentInfo.selectType === 'line' ? [
+          {
+            type: 'line',
+            id: RECT_ID + '_rect',
+            shape: {
+              x1: currentInfo.line.x1 - tools.x,
+              y1: currentInfo.line.y1 - tools.y,
+              x2: currentInfo.line.x2 - tools.x,
+              y2: currentInfo.line.y2 - tools.y,
+            },
+            style: {
+              fill: 'transparent',
+              stroke: '#3173FA',
+              lineWidth: 2,
+            },
           },
-        ],
+          {
+            type: 'image',
+            id: RECT_ID + '_rotate_left',
+            x: currentInfo.line.x1 - tools.x - 6,
+            y: currentInfo.line.y1 - tools.y - 6,
+            originX: 0,
+            originY: 0,
+            style: {
+              image: '/images/icon-pic-rotate.png',
+              width: 12,
+              height: 12,
+            },
+          },
+          {
+            type: 'image',
+            id: RECT_ID + '_rotate_right',
+            x: currentInfo.line.x2 - 6,
+            y: currentInfo.line.y2 - 6,
+            originX: 0,
+            originY: 0,
+            style: {
+              image: '/images/icon-pic-rotate.png',
+              width: 12,
+              height: 12,
+            },
+          },
+        ] :[ {
+            type: 'rect',
+            id: RECT_ID + '_rect',
+            shape: {
+              x: 0,
+              y: 0,
+              width: tools.width,
+              height: tools.height,
+            },
+            style: {
+              fill: 'transparent',
+              stroke: '#efefef',
+              lineWidth: 2,
+            },
+          },
+        
+          {
+            type: 'image',
+            id: RECT_ID + '_rotate',
+            x:  tools.width - 6,
+            y:  tools.height - 6,
+            originX: 0,
+            originY: 0,
+            style: {
+              image: '/images/icon-pic-rotate.png',
+              width: 12,
+              height: 12,
+            },
+          },
+          {
+            type: 'image',
+            id: RECT_ID + '_close',
+            x: tools.width - 6,
+            y: -6,
+            originX: 0,
+            originY: 0,
+            style: {
+              image: '/images/icon-photo-delete.png',
+              width: 12,
+              height: 12,
+            },
+          },
+        ]
+
+      }
+    ]
+  }]
       
       },
-
+    
     }
 
     return {

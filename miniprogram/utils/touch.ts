@@ -128,7 +128,11 @@ export default class Touch {
             let v = { x: otx - this.x1, y: oty - this.y1 };
             preV.x = v.x;
             preV.y = v.y;
+            this.centerX = (this.x1 + this.x2) / 2;
+            this.centerY = (this.y1 + this.y2) / 2;
             this.pinchStartLen = getLen(preV);
+            evt.centerX = this.centerX;
+            evt.centerY = this.centerY;
             this._option.multipointStart(evt);
         }
         this.longTapTimeout = setTimeout(function () {
@@ -149,6 +153,8 @@ export default class Touch {
             let v = { x: otx - currentX, y: oty - currentY };
 
             if (preV.x !== null) {
+                evt.centerX = (currentX + otx) / 2;
+                evt.centerY = (currentY + oty) / 2;
                 if (this.pinchStartLen > 0) {
                     evt.singleZoom = getLen(v) / this.pinchStartLen;
                     evt.zoom = evt.singleZoom * this.lastZoom;

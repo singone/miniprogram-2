@@ -1,11 +1,12 @@
-// pages/drawer/index.ts
+
 import store from "../../store/index"
+import computedBehavior from '../../utils/miniprogram-computed';
 import * as echarts from '../../components/ec-canvas/echarts.min.js';
-import { ELLIPSE_ID, getDrawerData, LINE_ID, GROUP_ID, IMAGE_ID, tramsformAngle, getAngle, getWidth } from "./utils";
+import { ELLIPSE_ID, getDrawerData, LINE_ID, GROUP_ID, IMAGE_ID, getAngle, getWidth, RECT_ID, transformAngleToRadian, transformAngle } from "./utils";
 import Touch from '../../utils/touch';
 
 Page({
-
+  behaviors: [computedBehavior],
   /**
    * 页面的初始数据
    */
@@ -39,6 +40,11 @@ Page({
     sliderMax: 100,
     sliderMin: 0,
     sliderStep: 1,
+  },
+  computed: {
+    sliderList(data: {sliderMax: number, sliderMin: number, sliderStep: number}) {
+      return Array.from({length: (data.sliderMax - data.sliderMin) / data.sliderStep}).map((item, index) => index * data.sliderStep + data.sliderMin);
+    }
   },
   drawInfo: {
     width: 0,
@@ -115,16 +121,97 @@ Page({
         height: height,
         devicePixelRatio: dpr // new
       });
-    
+      let moveId: string | null = null;
+      let startX = 0;
+      let startY = 0;
       new Touch(this, 'touch', {
+        tap: (e) => {
+          console.log(e, 'tap');
+        },
         rotate: (e) => {
-          console.log(e);
+          if (!moveId) {
+            return;
+          }
+          console.log(e.angle, transformAngleToRadian(e.angle), 'angle');
+          // $page.currentInfo.img.rotation = e.angle + $page.currentInfo.img.rotation;
+          // $page.drawImg();
+        },
+        multipointStart: (e) => {
+          console.log(e, 'multipointStart');
+          startX = e.centerX;
+          startY = e.centerY;
+        },
+        multipointEnd: (e) => {
+          console.log(e, 'multipointEnd');
         },
         pinch: (e) => {
-          console.log(e);
+          console.log(e.singleZoom, 'zoom');
+          $page.scale = e.zoom;
+        
+          const deltaX = e.centerX - startX;
+          const deltaY = e.centerY - startY;
+          $page.currentInfo.x = $page.currentInfo.x + deltaX;
+          $page.currentInfo.y = $page.currentInfo.y + deltaY;
+          $page.currentInfo.originX = e.centerX;
+          $page.currentInfo.originY = e.centerY;
+          startX = e.centerX;
+          startY = e.centerY;
+          $page.chart.setOption({
+            graphic: [
+              {
+                id: 'group',
+                scaleX: $page.scale,
+                scaleY: $page.scale,
+                originX: $page.currentInfo.originX,
+                originY: $page.currentInfo.originY,
+                x: $page.currentInfo.x ,
+                y: $page.currentInfo.y,
+              }
+            ]
+          });
         },
         pressMove: (e) => {
-          console.log(e);
+          if (moveId === RECT_ID + '_close') {
+            return;
+          }
+          console.log(moveId, e.deltaX, e.deltaY);
+
+          if (this.currentInfo.selectType === 'line') {
+            if (moveId === RECT_ID + '_rotate_left') {
+              this.currentInfo.line.x1 = this.currentInfo.line.x1 + e.deltaX;
+              this.currentInfo.line.y1 = this.currentInfo.line.y1 + e.deltaY;
+            } else if (moveId === RECT_ID + '_rotate_right') {
+              this.currentInfo.line.x2 = this.currentInfo.line.x2 + e.deltaX;
+              this.currentInfo.line.y2 = this.currentInfo.line.y2 + e.deltaY;
+            } else  {
+              this.currentInfo.line.x1 = this.currentInfo.line.x1 + e.deltaX;
+              this.currentInfo.line.y1 = this.currentInfo.line.y1 + e.deltaY;
+              this.currentInfo.line.x2 = this.currentInfo.line.x2 + e.deltaX;
+              this.currentInfo.line.y2 = this.currentInfo.line.y2 + e.deltaY;
+            }
+            this.drawImg();
+            return;
+          }
+          if (this.currentInfo.selectType === 'ellipse') {
+            if (moveId === RECT_ID + '_rect') {
+              this.currentInfo.ellipse.cx = this.currentInfo.ellipse.cx + e.deltaX;
+              this.currentInfo.ellipse.cy = this.currentInfo.ellipse.cy + e.deltaY;
+            } else if (moveId === RECT_ID + '_rotate') {
+              this.currentInfo.ellipse.cx = this.currentInfo.ellipse.cx + e.deltaX / 2;
+              this.currentInfo.ellipse.cy = this.currentInfo.ellipse.cy + e.deltaY / 2;
+              this.currentInfo.ellipse.rx = this.currentInfo.ellipse.rx + e.deltaX / 2;
+              this.currentInfo.ellipse.ry = this.currentInfo.ellipse.ry + e.deltaY / 2;
+            }
+            this.drawImg();
+            return;
+          }
+          if (this.currentInfo.selectType === 'image') {
+            this.currentInfo.x = this.currentInfo.x + e.deltaX;
+            this.currentInfo.y = this.currentInfo.y + e.deltaY;
+            this.drawImg();
+            return;
+          }
+          console.log(e, moveId);
         },
         
       });
@@ -168,6 +255,14 @@ Page({
       chart.on('click', function(params) {
         console.log(params.event.target.id);
         const targetId = params.event.target.id;
+        if (targetId === RECT_ID + '_close' || !targetId) {
+          $page.currentInfo.selectType = '';
+          $page.setData({
+            selectType: '',
+          })
+          $page.drawImg();
+          return;
+        }
         if (targetId.includes('ellipse')) {
           $page.currentInfo.selectType = 'ellipse';
           $page.setData({
@@ -196,85 +291,20 @@ Page({
           return;
         }
       })
-      let moveId: string | null = null;
-      let startX = 0;
-      let startY = 0;
+
       chart.on('mousedown', function(params) {
         moveId = params.event.target.id;
         console.log(moveId);
-        startX = params.event.offsetX;
-        startY = params.event.offsetY;
+    
         $page.touch.start(params.event.which);
       });
       chart.on('mousemove', function(params) {
         $page.touch.move(params.event.which);
-        if (!moveId) {
-          return;
-        }
-        console.log(moveId)
-        const offsetX = (params.event.offsetX - startX) / $page.scale / $page.drawInfo.dpr;
-        const offsetY = (params.event.offsetY - startY) / $page.scale / $page.drawInfo.dpr;
-        startX = params.event.offsetX;
-        startY = params.event.offsetY;
-        if (moveId === LINE_ID) {
-          console.log(offsetY);
-          $page.currentInfo.line.y1 = $page.currentInfo.line.y1 + offsetY;
-          $page.currentInfo.line.y2 = $page.currentInfo.line.y2 + offsetY;
-          $page.drawImg();
-          return
-        }
-       if (moveId === ELLIPSE_ID + '_ellipse') {
-          $page.currentInfo.ellipse.cx = $page.currentInfo.ellipse.cx + offsetX;
-          $page.currentInfo.ellipse.cy = $page.currentInfo.ellipse.cy + offsetY;
-          $page.drawImg();
-          return;
-        }
-        if (moveId === IMAGE_ID || moveId === GROUP_ID) {
-          $page.currentInfo.x = $page.currentInfo.x + offsetX;
-          $page.currentInfo.y = $page.currentInfo.y + offsetY;
-          $page.chart.setOption({
-            graphic: [
-              {
-                id: 'group',
-                scaleX:   $page.scale,
-                scaleY: $page.scale,
-                x: $page.currentInfo.x,
-                y: $page.currentInfo.y,
-              }
-            ]
-          });
-          return;
-        }
-        if (moveId === 'ellipse_ellipse_circle_right') {
-          $page.currentInfo.ellipse.cx = $page.currentInfo.ellipse.cx + offsetX / 2;
-          // $page.currentInfo.ellipse.cy = $page.currentInfo.ellipse.cy + offsetY / 2;
-          $page.currentInfo.ellipse.rx = $page.currentInfo.ellipse.rx + offsetX / 2;
-          // $page.currentInfo.ellipse.ry = $page.currentInfo.ellipse.ry + offsetY / 2;
-          $page.drawImg();
-          return;
-        } else if (moveId === 'ellipse_ellipse_circle_left') {
-          $page.currentInfo.ellipse.cx = $page.currentInfo.ellipse.cx + offsetX / 2;
-          $page.currentInfo.ellipse.rx = $page.currentInfo.ellipse.rx - offsetX / 2;
-          $page.drawImg();
-          return;
-        } else if (moveId === 'ellipse_ellipse_circle_bottom') {
-          $page.currentInfo.ellipse.cy = $page.currentInfo.ellipse.cy + offsetY / 2;
-          $page.currentInfo.ellipse.ry = $page.currentInfo.ellipse.ry + offsetY / 2;
-          $page.drawImg();
-          return;
-        } else if (moveId === 'ellipse_ellipse_circle_top') {
-          $page.currentInfo.ellipse.cy = $page.currentInfo.ellipse.cy + offsetY / 2;
-          $page.currentInfo.ellipse.ry = $page.currentInfo.ellipse.ry - offsetY / 2;
-          $page.drawImg();
-          return;
-        }
-        console.log(offsetX, offsetY);
       });
       chart.on('mouseup', function(params) {
         $page.touch.end(params.event.which);
         moveId = null;
-        startX = 0;
-        startY = 0;
+
         // console.log(params);
       });
       // 注意这里一定要返回 chart 实例，否则会影响事件处理等
@@ -291,6 +321,28 @@ Page({
     console.log(fileData);
     if (!isTest && fileData[currentUrl.tempFilePath]) {
       this.currentInfo = fileData[currentUrl.tempFilePath];
+      const getImgSize = (img) => {
+
+        let imgWidth = this.drawInfo.width;
+        let imgHeight = img.height * this.drawInfo.width / img.width;
+        if (imgHeight > this.drawInfo.height) {
+          imgHeight = this.drawInfo.height;
+          imgWidth = img.width * this.drawInfo.height / img.height;
+        }
+        return  {
+          showWidth: imgWidth,
+          showHeight: imgHeight,
+        };
+      }
+      this.currentInfo.img = {
+        ...this.currentInfo.img,
+        ...getImgSize(this.currentInfo.img),
+      };
+      this.currentInfo.line = {
+        ...this.currentInfo.line,
+        x1: 10,
+        x2: this.drawInfo.width - 20,
+      };
       this.drawImg();
       return;
     }
@@ -301,7 +353,13 @@ Page({
         const widthScale = this.drawInfo.width / res.width;
         const heightScale = this.drawInfo.height / res.height;
         const imgScale = widthScale < heightScale ? widthScale : heightScale;
-        this.scale = 1;
+        
+        let imgWidth = this.drawInfo.width;
+        let imgHeight = res.height * widthScale;
+        if (imgHeight > this.drawInfo.height) {
+          imgHeight = this.drawInfo.height;
+          imgWidth = res.width * heightScale;
+        }
           this.currentInfo = {
             selectType: '',
             x: 0,
@@ -309,8 +367,12 @@ Page({
             concentration: '',
             angle: 0,
           rotation: 0,
+          originX: imgWidth / 2,
+          originY: imgHeight / 2,
           img: {
-            width:  res.width,
+            showWidth:  imgWidth,
+            showHeight: imgHeight,
+            width: res.width,
             height: res.height,
             url: currentUrl.tempFilePath,
             imgScale,
@@ -345,7 +407,7 @@ Page({
     const {option, angle} = getDrawerData($page.currentInfo, $page.drawInfo,  $page.scale);
     $page.currentInfo.angle = angle;
     this.setData({
-      angle: tramsformAngle(angle),
+      angle: transformAngle(angle),
     })
     $page.changeValue();
     $page.chart.setOption(option);
@@ -479,113 +541,6 @@ Page({
     } 
     this.drawImg();
   },
-  dealEllipse(type){
-    console.log(type);
-    const {changeNum} = this.data;
-    switch(type){
-      case 'up':
-        this.currentInfo.ellipse.cy = this.currentInfo.ellipse.cy - 1 * changeNum;
-        break;
-      case 'down':  
-        this.currentInfo.ellipse.cy = this.currentInfo.ellipse.cy + 1 * changeNum;
-        break;
-      case 'left':
-        this.currentInfo.ellipse.cx = this.currentInfo.ellipse.cx - 1 * changeNum;
-        break;
-      case 'right':
-        this.currentInfo.ellipse.cx = this.currentInfo.ellipse.cx + 1 * changeNum;
-        break;
-      case 'horizontal-max':
-        this.currentInfo.ellipse.rx = this.currentInfo.ellipse.rx + 1 * changeNum;
-        this.currentInfo.ellipse.cx = this.currentInfo.ellipse.cx + 1 * changeNum / 2;
-        break;
-      case 'horizontal-min':
-        this.currentInfo.ellipse.rx = this.currentInfo.ellipse.rx - 1 * changeNum;
-        this.currentInfo.ellipse.cx = this.currentInfo.ellipse.cx - 1 * changeNum / 2;
-        break;
-      case 'vertical-max':
-        this.currentInfo.ellipse.ry = this.currentInfo.ellipse.ry + 1 * changeNum;
-        this.currentInfo.ellipse.cy = this.currentInfo.ellipse.cy + 1 * changeNum / 2;
-        break;
-      case 'vertical-min':
-        this.currentInfo.ellipse.ry = this.currentInfo.ellipse.ry - 1 * changeNum;
-        this.currentInfo.ellipse.cy = this.currentInfo.ellipse.cy - 1 * changeNum / 2;
-        break;
-    }
-    this.drawImg();
-  },
-  dealLine(type){
-    console.log(type);
-    const {changeNum} = this.data;
-    switch(type){
-      case 'up':
-        this.currentInfo.line.y1 = this.currentInfo.line.y1 - 1 * changeNum;
-        this.currentInfo.line.y2 = this.currentInfo.line.y2 - 1 * changeNum;
-        break;
-      case 'down':  
-        this.currentInfo.line.y1 = this.currentInfo.line.y1 + 1 * changeNum;
-        this.currentInfo.line.y2 = this.currentInfo.line.y2 + 1 * changeNum;
-        break;
-    }
-  
-    this.drawImg();
-  },
-  dealImage(type){
-    console.log(type);
-    const {changeNum} = this.data;
-    switch(type){
-      case 'rotate-right':
-        this.currentInfo.img.rotation = this.currentInfo.img.rotation + Math.PI * changeNum / 180;
-        break;
-      case 'rotate-left':
-        this.currentInfo.img.rotation = this.currentInfo.img.rotation - Math.PI / 180 * changeNum;
-        break;
-    }
-    this.drawImg();
-  },
-  dealBox(type){
-    console.log(type);
-    if (!this.chart) {
-      return;
-    }
-    const {changeNum} = this.data;
-    switch(type){
-      case 'up':
-        this.currentInfo.y = this.currentInfo.y - 1 * changeNum;
-        break;
-      case 'down':
-        this.currentInfo.y = this.currentInfo.y + 1 * changeNum ;
-        break;
-      case 'left':
-        this.currentInfo.x = this.currentInfo.x - 1 * changeNum;
-        break;
-      case 'right':
-        this.currentInfo.x = this.currentInfo.x + 1 * changeNum;
-        break;
-      case 'min':
-        this.scale = this.scale - 0.1 * (changeNum > 1 ? 2 : changeNum);
-        break;
-      case 'max':
-        this.scale = this.scale + 0.1 * (changeNum > 1 ? 2 : changeNum);
-        break;
-  
-      default:
-        break;
-    }
-    console.log(this.currentInfo.x, this.currentInfo.y, this.scale);
-    this.chart.setOption({
-      graphic: [
-        {
-          id: 'group',
-          scaleX: this.scale,
-          scaleY: this.scale,
-          x: this.currentInfo.x,
-          y: this.currentInfo.y,
-        }
-      ]
-    });
-    // this.drawImg();
-  },
 
   handleSelectType(e){
     const {type} = e.currentTarget.dataset;
@@ -651,6 +606,7 @@ Page({
       defaultSliderValue,
       sliderMax,
       sliderMin,
+      
       sliderValue: defaultSliderValue,
     });
   },
@@ -699,7 +655,7 @@ Page({
     switch(selectType){
       case 'line':
         console.log(this.currentInfo.line);
-        defaultSliderValue = Math.round(tramsformAngle(getAngle(this.currentInfo.line.x1, this.currentInfo.line.y1, this.currentInfo.line.x2, this.currentInfo.line.y2)));
+        defaultSliderValue = Math.round(transformAngle(getAngle(this.currentInfo.line.x1, this.currentInfo.line.y1, this.currentInfo.line.x2, this.currentInfo.line.y2)));
         this.defaultValue = {
           rotation: defaultSliderValue,
           x1: this.currentInfo.line.x1,
@@ -712,7 +668,7 @@ Page({
         };
         break;
       default:
-        defaultSliderValue = Math.round(tramsformAngle(this.currentInfo.img.rotation));
+        defaultSliderValue = Math.round(transformAngle(this.currentInfo.img.rotation));
 
         this.defaultValue = {
           rotation: defaultSliderValue,
