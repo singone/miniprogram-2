@@ -1,0 +1,10 @@
+dist/
+deploy_versions/
+.temp/
+.rn_temp/
+node_modules/
+miniprogram/node_modules/.pnpm/lock.yaml
+miniprogram/node_modules/.modules.yaml
+miniprogram/node_modules/.pnpm/lock.yaml
+miniprogram/node_modules/.modules.yaml
+miniprogram/node_modules/.pnpm/lock.yaml
