@@ -489,7 +489,7 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
             originX: 0,
             originY: 0,
             style: {
-              image: '/images/icon-photo-delete.png',
+              image: '/images/icon-pic-deleted.png',
               width: 12,
               height: 12,
             },

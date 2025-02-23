@@ -44,11 +44,17 @@
     </view>
     <view class="slider-container">
         <view class="slider-content"> 
-            <scroll-view class="slider-content_scroll" enable-flex="{{true}}" scroll-x="{{true}}" scroll-y="{{false}}" style="height: 60px;">
+            <scroll-view class="slider-content_scroll" scroll-into-view="slider-item-value-{{sliderValue}}" show-scrollbar="{{false}}" bind:scroll="handleScrollSlider" enable-flex="{{true}}" scroll-x="{{true}}" scroll-y="{{false}}" style="height:30px;">
+                <view class="slider-item-left"></view>
                 <view class="slider-item" wx:for="{{sliderList}}" wx:key="index">
-                    <view class="slider-item-value {{index % 5 === 0 ? 'slider-item-value-total' : ''}}"></view>
+                    <view id="slider-item-value-{{index}}" class="slider-item-value {{index % 5 === 0 ? 'slider-item-value-total' : ''}}"></view>
                 </view>
+                <view class="slider-item-right"></view>
+
             </scroll-view>
+              <view class="slider-item-selected">
+                    <view class="slider-item-selected-value"></view>
+                </view>
         </view>
 
         <view class="slider-value">

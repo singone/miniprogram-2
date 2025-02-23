@@ -1,10 +1,11 @@
 
 import store from "../../store/index"
-import computedBehavior from '../../utils/miniprogram-computed';
+import { behavior as computedBehavior  } from '../../utils/miniprogram-computed';
 import * as echarts from '../../components/ec-canvas/echarts.min.js';
 import { ELLIPSE_ID, getDrawerData, LINE_ID, GROUP_ID, IMAGE_ID, getAngle, getWidth, RECT_ID, transformAngleToRadian, transformAngle } from "./utils";
 import Touch from '../../utils/touch';
 
+console.log(computedBehavior);
 Page({
   behaviors: [computedBehavior],
   /**
@@ -43,6 +44,8 @@ Page({
   },
   computed: {
     sliderList(data: {sliderMax: number, sliderMin: number, sliderStep: number}) {
+      const {sliderMax, sliderMin, sliderStep} = data;
+      console.log(sliderMax, sliderMin, sliderStep);
       return Array.from({length: (data.sliderMax - data.sliderMin) / data.sliderStep}).map((item, index) => index * data.sliderStep + data.sliderMin);
     }
   },
@@ -424,6 +427,9 @@ Page({
       sliderValue: this.data.defaultSliderValue,
     });
     this.dealSlider();
+  },
+  handleScrollSlider(e){
+    console.log(e);
   },
   dealSlider(){
     const {sliderType} = this.data;
