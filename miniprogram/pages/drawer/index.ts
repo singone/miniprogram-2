@@ -62,6 +62,10 @@ Page({
   currentInfo: {
     x: 0,
     y: 0,
+    originX: 0,
+    originY: 0,
+    maxWidth: 0,
+    maxHeight: 0,
     rotation: 0,
     concentration: '',
     angle: 0,
@@ -209,8 +213,13 @@ Page({
             return;
           }
           if (this.currentInfo.selectType === 'image') {
-            this.currentInfo.x = this.currentInfo.x + e.deltaX;
-            this.currentInfo.y = this.currentInfo.y + e.deltaY;
+            if (this.currentInfo.x < this.currentInfo.maxWidth && this.currentInfo.x > -this.currentInfo.maxWidth) {
+              this.currentInfo.x = this.currentInfo.x + e.deltaX;
+            }
+            if (this.currentInfo.y < this.currentInfo.maxHeight && this.currentInfo.y > -this.currentInfo.maxHeight) {
+              this.currentInfo.y = this.currentInfo.y + e.deltaY;
+            }
+      
             this.drawImg();
             return;
           }
@@ -372,6 +381,8 @@ Page({
           rotation: 0,
           originX: imgWidth / 2,
           originY: imgHeight / 2,
+          maxWidth: imgWidth,
+          maxHeight: imgHeight,
           img: {
             showWidth:  imgWidth,
             showHeight: imgHeight,
@@ -428,8 +439,12 @@ Page({
     });
     this.dealSlider();
   },
+  timer: null,
   handleScrollSlider(e){
-    console.log(e);
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => {
+      console.log(e);
+    }, 100);
   },
   dealSlider(){
     const {sliderType} = this.data;
@@ -582,8 +597,8 @@ Page({
     const { selectType } = this.data;
     let defaultSliderValue = 1;
     let sliderStep = 1;
-    let sliderMax = this.drawInfo.width;
-    let sliderMin = -sliderMax;
+    let sliderMax = this.currentInfo.maxWidth;
+    let sliderMin = -this.currentInfo.maxWidth;
     switch(selectType){
       case 'line':
         this.defaultValue = {
@@ -620,8 +635,8 @@ Page({
     const { selectType } = this.data;
     let defaultSliderValue = 1;
     let sliderStep = 1;
-    let sliderMax = this.drawInfo.height;
-    let sliderMin = -this.drawInfo.height;
+    let sliderMax = this.currentInfo.maxHeight;
+    let sliderMin = -this.currentInfo.maxHeight;
     switch(selectType){
       case 'line':  
         this.defaultValue = {

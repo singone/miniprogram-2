@@ -52,7 +52,7 @@
                 <view class="slider-item-right"></view>
 
             </scroll-view>
-              <view class="slider-item-selected">
+              <view class="slider-item-selected" id="slider-item-selected">
                     <view class="slider-item-selected-value"></view>
                 </view>
         </view>
