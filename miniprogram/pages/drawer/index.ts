@@ -35,7 +35,7 @@ Page({
         value: 'chat',
       },
     ],
-    sliderType: 'horizontal-move',
+    sliderType: '',
     sliderValue: 10,
     defaultSliderValue: 10,
     sliderMax: 100,
@@ -48,7 +48,33 @@ Page({
       const {sliderMax, sliderMin, sliderStep} = data;
       console.log(sliderMax, sliderMin, sliderStep);
       return Array.from({length: (data.sliderMax - data.sliderMin) / data.sliderStep}).map((item, index) => index * data.sliderStep + data.sliderMin);
-    }
+    },
+    showSliderValue(data: {sliderValue: number, selectType: string, sliderStep: number}) {
+      const {sliderValue, selectType} = data;
+      const types = {
+        line: '直行',
+        ellipse: '椭圆',
+        image: '图片',
+      }
+      const type = types[selectType] || types['image'];
+      const units = {
+        'horizontal-move': 'px',
+        'vertical-move': 'px',
+        rotate: '°',
+        'horizontal-scale': 'px',
+        'vertical-scale': 'px',
+      }
+      const sliderTypes = {
+        'horizontal-move': '左右',
+        'vertical-move': '上下',
+        rotate: '旋转',
+        'horizontal-scale': '左右',
+        'vertical-scale': '上下',
+      }
+      const sliderType = sliderTypes[selectType] || sliderTypes['horizontal-move'];
+      const unit = units[selectType] || units['horizontal-move'];
+      return type + ':' + sliderType + ' ' + sliderValue + unit;
+    },
   },
   drawInfo: {
     width: 0,
@@ -164,10 +190,22 @@ Page({
         
           const deltaX = e.centerX - startX;
           const deltaY = e.centerY - startY;
+
           $page.currentInfo.x = $page.currentInfo.x + deltaX;
+          if ($page.currentInfo.x > $page.currentInfo.maxWidth) {
+            $page.currentInfo.x = $page.currentInfo.maxWidth;
+          }
+          if ($page.currentInfo.x < -$page.currentInfo.maxWidth) {
+            $page.currentInfo.x = -$page.currentInfo.maxWidth;
+          }
           $page.currentInfo.y = $page.currentInfo.y + deltaY;
-          $page.currentInfo.originX = e.centerX;
-          $page.currentInfo.originY = e.centerY;
+
+          if ($page.currentInfo.y > $page.currentInfo.maxHeight) {
+            $page.currentInfo.y = $page.currentInfo.maxHeight;
+          }
+          if ($page.currentInfo.y < -$page.currentInfo.maxHeight) {
+            $page.currentInfo.y = -$page.currentInfo.maxHeight;
+          }
           startX = e.centerX;
           startY = e.centerY;
           $page.chart.setOption({
@@ -220,11 +258,19 @@ Page({
             return;
           }
           if (this.currentInfo.selectType === 'image' || !this.currentInfo.selectType) {
-            if (this.currentInfo.x < this.currentInfo.maxWidth && this.currentInfo.x > -this.currentInfo.maxWidth) {
-              this.currentInfo.x = this.currentInfo.x + e.deltaX;
+            this.currentInfo.x = this.currentInfo.x + e.deltaX;
+            if (this.currentInfo.x > this.currentInfo.maxWidth) {
+              this.currentInfo.x = this.currentInfo.maxWidth;
             }
-            if (this.currentInfo.y < this.currentInfo.maxHeight && this.currentInfo.y > -this.currentInfo.maxHeight) {
-              this.currentInfo.y = this.currentInfo.y + e.deltaY;
+            if (this.currentInfo.x < -this.currentInfo.maxWidth) {
+              this.currentInfo.x = -this.currentInfo.maxWidth;
+            }
+            this.currentInfo.y = this.currentInfo.y + e.deltaY;
+            if (this.currentInfo.y > this.currentInfo.maxHeight) {
+              this.currentInfo.y = this.currentInfo.maxHeight;
+            }
+            if (this.currentInfo.y < -this.currentInfo.maxHeight) {
+              this.currentInfo.y = -this.currentInfo.maxHeight;
             }
       
             this.drawImg();
@@ -274,38 +320,29 @@ Page({
       chart.on('click', function(params) {
         console.log(params.event.target.id);
         const targetId = params.event.target.id;
+        $page.setData({
+          sliderType: '',
+        })
         if (targetId === RECT_ID + '_close' || !targetId) {
           $page.currentInfo.selectType = '';
-          $page.setData({
-            selectType: '',
-          })
+      
           $page.drawImg();
           return;
         }
         if (targetId.includes('ellipse')) {
           $page.currentInfo.selectType = 'ellipse';
-          $page.setData({
-            selectType: 'ellipse',
-          })
-          $page.initSlider();
+         
           $page.drawImg();
           return;
         }
         if (targetId.includes('line')) {
           $page.currentInfo.selectType = 'line';
-          $page.setData({
-            selectType: 'line',
-          })
-          $page.initSlider();
+    
           $page.drawImg();
           return;
         }
         if (targetId.includes('image')) {
-          $page.currentInfo.selectType = 'image';
-          $page.setData({
-            selectType: 'image',
-          }) 
-          $page.initSlider();
+          $page.currentInfo.selectType = 'image'; 
           $page.drawImg();
           return;
         }
@@ -323,6 +360,7 @@ Page({
       chart.on('mouseup', function(params) {
         $page.touch.end(params.event.which);
         moveId = null;
+        
         // console.log(params);
       });
       // 注意这里一定要返回 chart 实例，否则会影响事件处理等
@@ -424,7 +462,11 @@ Page({
       return;
     }
     const $page = this;
-    const {option, angle} = getDrawerData($page.currentInfo, $page.drawInfo,  $page.scale);
+    const {option, angle} = getDrawerData($page.currentInfo, $page.drawInfo,  $page.scale, {
+      isTest: this.data.isTest,
+      concentration: this.data.concentration,
+      linear: this.data.linear,
+    });
     $page.currentInfo.angle = angle;
     this.setData({
       angle: transformAngle(angle),
@@ -450,11 +492,12 @@ Page({
     clearTimeout(this.timer);
     this.timer = setTimeout(() => {
       console.log(e);
-      const { sliderMin, sliderStep, sliderValue } = this.data;
+      const { sliderMin, sliderStep, sliderType, sliderValue } = this.data;
       const { scrollLeft } = e.detail;
       const sliderIndex = Math.floor((scrollLeft + 1) / 6 );
       const result = sliderMin + sliderIndex * sliderStep;
-      if (result !== sliderValue) {
+      console.log(result, sliderValue, 'scroll');
+      if (result !== sliderValue && sliderType) {
         this.setData({
           sliderIndex,
           sliderValue: result,
@@ -987,6 +1030,33 @@ Page({
             this.drawImg();
           }
         }
+      }
+    });
+  },
+  handleSaveChart() {
+    this.drawCom.canvasToTempFilePath({
+      success: res => {
+        // 存入系统相册
+        wx.saveImageToPhotosAlbum({
+          filePath: res.tempFilePath || '',
+          success: res => {
+            wx.showToast({
+              title: '保存成功',
+            })
+          },
+          fail: res => {
+            wx.showToast({
+              title: '保存失败',
+              icon: 'none',
+            })
+          }
+        })
+      },
+      fail: res => {
+        wx.showToast({
+          title: '保存失败',
+          icon: 'none',
+        })
       }
     });
   },

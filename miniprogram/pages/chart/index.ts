@@ -87,10 +87,13 @@ Page({
     const data = files.filter(i => i.checked).map(item => {
       return [item.concentration, item.angle];
     });
-    if (data.length < 3) {
+    if (data.filter(item => item[0] && item[1]).length < 3) {
       wx.showToast({
         title: '请至少选择3个数据',
         icon: 'none',
+      });
+      this.setData({
+        linear: null,
       });
       return;
     }

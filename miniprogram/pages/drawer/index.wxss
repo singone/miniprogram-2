@@ -22,13 +22,14 @@ page{
     left: 10px;
     width: 40px;
     height: 40px;
-    color: #fff;
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.5);
-    border-radius: 50%;
     z-index: 10;
+}
+.canvas-arrow-text{
+    width: 100%;
+    height: 100%;
 }
 .canvas-arrow_right{
     position: absolute;
@@ -36,12 +37,9 @@ page{
     right: 10px;
     width: 40px;
     height: 40px;
-    color: #fff;
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.5);
-    border-radius: 50%;
 }
 .canvas{
     position: relative;
@@ -156,6 +154,9 @@ page{
 .test-select-type.select-type{
     bottom: 200rpx;
 }
+.test-value{
+    color: var(--drawer-color-primary);
+}
 .select-type-item{
     display: flex;
     height: 100rpx;
@@ -189,6 +190,11 @@ page{
     margin: 12px 12px 0;
     border: 1px solid #e1e1e1;
 }
+.test-value-container{
+    padding: 14px 20px;
+    flex-direction: column;
+    font-size: 12px;
+}
 .slider-container{
     display: flex;
     align-items: center;
@@ -199,14 +205,12 @@ page{
     display: flex;
     align-items: center;
     position: relative;
+    padding-bottom: 10px;
 }
 .slider-content_scroll{
     flex: 1;
 }
-.slider-item-space{
-    height: 20px;
-    min-width: 50%;
-}
+
 .slider-item-space{
     width: 40vw;
     height: 20px;
@@ -231,11 +235,13 @@ page{
 }
 .slider-item-selected{
     position: absolute;
-    left: 50%;
     top: 0;
-    width: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
     height: 20px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
 }
@@ -243,7 +249,14 @@ page{
     width: 2px;
     height: 20px;
     background-color: #191A1D;
-
+}
+.slider-item-selected-value-text{
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: #999;
 }
 .slider-value{
     width: 100rpx;

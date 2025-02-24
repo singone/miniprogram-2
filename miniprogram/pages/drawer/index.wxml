@@ -1,10 +1,10 @@
 <!--pages/drawer/index.wxml-->
 <van-nav-bar title="{{isTest ? '测量浓度' : '画布'}}" bind:click-left="handleBack" left-arrow="{{true}}" />
+<block wx:if="{{files && !isTest}}">
  <scroll-view 
- enable-flex
-  class="scroll"  scroll-x="{{true}}" style="height: 60px;"
+    enable-flex
+    class="scroll"  scroll-x="{{true}}" style="height: 60px;"
     padding="[]"
-    wx:if="files && !isTest"
 >
     <view  wx:for="{{files}}"
      wx:key="tempFilePath"
@@ -23,24 +23,29 @@
         <image class="img-add" src="/images/icon-photo-add.png" />
     </view>
  </scroll-view>
+</block>
+
  <view class="canvas-container">
     <ec-canvas class="canvas" 
         ec="{{ ec }}"
         id="draw-com"
         type="2d"
     />
-     <cover-view bind:tap="handlePrev" class="canvas-arrow_left">
-          <van-icon name="arrow-left" />
+     <cover-view v-if="!isTest" bind:tap="handlePrev" class="canvas-arrow_left">
+          <cover-image src="/images/icon-btn-picPrev.png" class="canvas-arrow-text" />
         </cover-view>
-        <cover-view bind:tap="handleNext" class="canvas-arrow_right">
-        <van-icon name="arrow" />
+        <cover-view v-if="!isTest" bind:tap="handleNext" class="canvas-arrow_right">
+        <cover-image src="/images/icon-btn-picNext.png" class="canvas-arrow-text" />
     </cover-view>
  </view>
 
 <view class="select-type {{isTest ? 'test-select-type' : ''}}">
-     <view class="value-container">
-        <text>浓度：{{fileData[files[selectedIndex].tempFilePath].concentration ||'--'}}mol/L;</text>
-        <text>平均接触角：{{angle ||'--'}}°</text>
+     <view class="value-container {{isTest ? 'test-value-container' : ''}}">
+        <text wx:if="{{isTest}}">公式：{{linear.expression}};</text>
+
+        <text>平均接触角：{{angle ||'--'}}°;</text>
+        <text wx:if="{{!isTest}}">浓度：<text>{{fileData[files[selectedIndex].tempFilePath].concentration ||'--'}}mol/L;</text></text>
+        <text class="test-value" wx:else>浓度：{{concentration}}mol/L</text>
     </view>
     <view class="slider-container">
         <view class="slider-content" id="slider-content"> 
@@ -66,6 +71,8 @@
             <view class="slider-item-selected" id="slider-item-selected">
                 <view class="slider-item-selected-value"></view>
             </view>
+            <view class="slider-item-selected-value-text">{{showSliderValue}}</view>
+
         </view>
 
         <view class="slider-value">
@@ -161,17 +168,12 @@
     </view>
 </block>
 <block wx:else>
-    <view class="test-info">
-        <text>公式：{{linear.expression}}</text>
-        <text>测量角度：{{angle}}°</text>
-    </view>
     <view active class="footer">
         <view class="footer_left">
-        <span>浓度：{{concentration}}mol/L</span>
+            <van-button class="btn " wx:if="{{concentration}}" type="danger" bind:tap="handleSaveChart">保存图片</van-button>
         </view>
         <view class="footer_right">
-            <van-button class="btn " plain type="primary" bind:tap="handleSaveText">保存结果</van-button>
-            <van-button class="btn " plain type="primary" bind:tap="handleTest">继续测试</van-button>
+            <van-button class="btn " type="primary" bind:tap="handleTest">继续测试</van-button>
         </view>
     </view>
 </block>

@@ -4,8 +4,8 @@
     background-color: #fff;
     margin: 10px;
     border-radius: 10px;
-
 }
+
 page{
     height: 100%;
     display: flex;

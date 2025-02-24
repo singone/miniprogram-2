@@ -10,6 +10,13 @@
     "miniprogram": {
       "list": [
         {
+          "name": "pages/drawer/index",
+          "pathName": "pages/drawer/index",
+          "query": "test=true",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
           "name": "pages/chart/detail",
           "pathName": "pages/chart/detail",
           "query": "index=0",
