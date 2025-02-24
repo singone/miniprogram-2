@@ -225,14 +225,14 @@ Component({
           stopImmediatePropagation: () => {},
           stopPropagation: () => {}
         });
-        handler.dispatch('mousemove', {
-          zrX: touch.x,
-          zrY: touch.y,
-          which: e,
-          preventDefault: () => {},
-          stopImmediatePropagation: () => {},
-          stopPropagation: () => {}
-        });
+        // handler.dispatch('mousemove', {
+        //   zrX: touch.x,
+        //   zrY: touch.y,
+        //   which: e,
+        //   preventDefault: () => {},
+        //   stopImmediatePropagation: () => {},
+        //   stopPropagation: () => {}
+        // });
         handler.processGesture(wrapTouch(e), 'start');
       }
     },

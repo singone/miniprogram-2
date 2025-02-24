@@ -35,12 +35,13 @@ Page({
         value: 'chat',
       },
     ],
-    sliderType: '',
+    sliderType: 'horizontal-move',
     sliderValue: 10,
     defaultSliderValue: 10,
     sliderMax: 100,
     sliderMin: 0,
     sliderStep: 1,
+    halfSliderComWidth: 0,
   },
   computed: {
     sliderList(data: {sliderMax: number, sliderMin: number, sliderStep: number}) {
@@ -128,6 +129,7 @@ Page({
         height: height,
         devicePixelRatio: dpr // new
       });
+      let multipointStart = false;
       let moveId: string | null = null;
       let startX = 0;
       let startY = 0;
@@ -145,13 +147,18 @@ Page({
         },
         multipointStart: (e) => {
           console.log(e, 'multipointStart');
+          multipointStart = true;
           startX = e.centerX;
           startY = e.centerY;
         },
         multipointEnd: (e) => {
           console.log(e, 'multipointEnd');
+          multipointStart = false;
         },
         pinch: (e) => {
+          if (!multipointStart) {
+            return;
+          }
           console.log(e.singleZoom, 'zoom');
           $page.scale = e.zoom;
         
@@ -212,7 +219,7 @@ Page({
             this.drawImg();
             return;
           }
-          if (this.currentInfo.selectType === 'image') {
+          if (this.currentInfo.selectType === 'image' || !this.currentInfo.selectType) {
             if (this.currentInfo.x < this.currentInfo.maxWidth && this.currentInfo.x > -this.currentInfo.maxWidth) {
               this.currentInfo.x = this.currentInfo.x + e.deltaX;
             }
@@ -316,7 +323,6 @@ Page({
       chart.on('mouseup', function(params) {
         $page.touch.end(params.event.which);
         moveId = null;
-
         // console.log(params);
       });
       // 注意这里一定要返回 chart 实例，否则会影响事件处理等
@@ -444,14 +450,23 @@ Page({
     clearTimeout(this.timer);
     this.timer = setTimeout(() => {
       console.log(e);
+      const { sliderMin, sliderStep, sliderValue } = this.data;
+      const { scrollLeft } = e.detail;
+      const sliderIndex = Math.floor((scrollLeft + 1) / 6 );
+      const result = sliderMin + sliderIndex * sliderStep;
+      if (result !== sliderValue) {
+        this.setData({
+          sliderIndex,
+          sliderValue: result,
+        });
+        this.dealSlider();
+      }
     }, 100);
   },
   dealSlider(){
     const {sliderType} = this.data;
     switch(sliderType){
-      case 'horizontal-move':
-        this.dealMoveHorizontal();
-        break;
+    
       case 'vertical-move':
         this.dealMoveVertical();
         break;
@@ -465,7 +480,8 @@ Page({
         this.dealScaleVertical();
         break;
       default:
-        break;
+        this.dealMoveHorizontal();
+          break;
     }
   },
   dealMoveHorizontal(){
@@ -505,7 +521,7 @@ Page({
         break;
     }
     this.drawImg();
-  },
+  },  
   dealRotate(){
     const {sliderValue, selectType, defaultSliderValue} = this.data;
     const changeNum = sliderValue - defaultSliderValue;
@@ -1010,6 +1026,15 @@ Page({
    */
   onShow() {
     this.drawCom = this.selectComponent('#draw-com');
+    
+    this.sliderCom = wx.createSelectorQuery().select('#slider-content');
+    this.sliderCom.boundingClientRect((res) => {
+      console.log(res);
+      this.setData({
+        halfSliderComWidth: Math.floor(res.width / 2),
+      });
+    }).exec()
+    this.sliderSelectedCom = wx.createSelectorQuery().select('#slider-item-selected');
     this.initChart();
   },
 

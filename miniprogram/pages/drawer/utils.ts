@@ -273,6 +273,7 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
         width: Math.min(drawInfo.width - 10, Math.max(Math.abs(currentInfo.line.x2 - currentInfo.line.x1), 20)),
       };
     }
+    console.log(currentInfo, tools);
     const option = {
       useCoarsePointer: true,
       backgroundColor: 'transparent',
@@ -409,11 +410,12 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
         ignore: !tools.width,
         x: tools.x,
         y: tools.y,
-        $action:'replace',
+        $action: 'replace',
         children:  currentInfo.selectType === 'line' ? [
           {
             type: 'line',
             id: RECT_ID + '_rect',
+            $action: 'replace',
             shape: {
               x1: currentInfo.line.x1 - tools.x,
               y1: currentInfo.line.y1 - tools.y,
@@ -428,6 +430,7 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
           },
           {
             type: 'image',
+            $action: 'replace',
             id: RECT_ID + '_rotate_left',
             x: currentInfo.line.x1 - tools.x - 6,
             y: currentInfo.line.y1 - tools.y - 6,
@@ -441,6 +444,7 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
           },
           {
             type: 'image',
+            $action: 'replace',
             id: RECT_ID + '_rotate_right',
             x: currentInfo.line.x2 - 6,
             y: currentInfo.line.y2 - 6,
@@ -454,6 +458,7 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
           },
         ] :[ {
             type: 'rect',
+            $action: 'replace',
             id: RECT_ID + '_rect',
             shape: {
               x: 0,
@@ -470,6 +475,7 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
         
           {
             type: 'image',
+            $action: 'replace',
             id: RECT_ID + '_rotate',
             x:  tools.width - 6,
             y:  tools.height - 6,
@@ -483,6 +489,7 @@ export function getDrawerData(currentInfo, drawInfo, scale) {
           },
           {
             type: 'image',
+            $action: 'replace',
             id: RECT_ID + '_close',
             x: tools.width - 6,
             y: -6,

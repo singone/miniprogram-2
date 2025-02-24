@@ -128,8 +128,8 @@ export default class Touch {
             let v = { x: otx - this.x1, y: oty - this.y1 };
             preV.x = v.x;
             preV.y = v.y;
-            this.centerX = (this.x1 + this.x2) / 2;
-            this.centerY = (this.y1 + this.y2) / 2;
+            this.centerX = (this.x1 + otx) / 2;
+            this.centerY = (this.y1 + oty) / 2;
             this.pinchStartLen = getLen(preV);
             evt.centerX = this.centerX;
             evt.centerY = this.centerY;

@@ -203,15 +203,14 @@ page{
 .slider-content_scroll{
     flex: 1;
 }
-.slider-item-left{
-    width: 40vw;
+.slider-item-space{
     height: 20px;
-    min-width: 40vw;
+    min-width: 50%;
 }
-.slider-item-right{
+.slider-item-space{
     width: 40vw;
     height: 20px;
-    min-width: 40vw;
+    min-width: 50%;
 }
 .slider-item{
     width: 6px;

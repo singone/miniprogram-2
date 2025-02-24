@@ -43,25 +43,35 @@
         <text>平均接触角：{{angle ||'--'}}°</text>
     </view>
     <view class="slider-container">
-        <view class="slider-content"> 
-            <scroll-view class="slider-content_scroll" scroll-into-view="slider-item-value-{{sliderValue}}" show-scrollbar="{{false}}" bind:scroll="handleScrollSlider" enable-flex="{{true}}" scroll-x="{{true}}" scroll-y="{{false}}" style="height:30px;">
-                <view class="slider-item-left"></view>
-                <view class="slider-item" wx:for="{{sliderList}}" wx:key="index">
-                    <view id="slider-item-value-{{index}}" class="slider-item-value {{index % 5 === 0 ? 'slider-item-value-total' : ''}}"></view>
+        <view class="slider-content" id="slider-content"> 
+            <scroll-view class="slider-content_scroll"
+               show-scrollbar="{{false}}" 
+               bind:scroll="handleScrollSlider" 
+               scroll-with-animation="{{true}}"
+               wx:if="{{halfSliderComWidth && sliderList.length > 0}}"
+               scroll-into-view-offset="{{-halfSliderComWidth - 1}}"
+               scroll-into-view="slider-item-value-{{sliderValue}}"
+               enable-flex="{{true}}"
+                scroll-x="{{true}}"
+                 scroll-y="{{false}}" 
+                 style="height:30px;"
+            >
+                <view style="width: {{halfSliderComWidth}}px;" id="slider-item-value-null" class="slider-item-left slider-item-space"></view>
+                <view class="slider-item" wx:for="{{sliderList}}" id="slider-item-value-{{index * sliderStep + sliderMin }}" wx:key="index">
+                    <view class="slider-item-value {{index % 5 === 0 ? 'slider-item-value-total' : ''}}"></view>
                 </view>
-                <view class="slider-item-right"></view>
+                <view style="width: {{halfSliderComWidth}}px;" class="slider-item-right slider-item-space"></view>
 
             </scroll-view>
-              <view class="slider-item-selected" id="slider-item-selected">
-                    <view class="slider-item-selected-value"></view>
-                </view>
+            <view class="slider-item-selected" id="slider-item-selected">
+                <view class="slider-item-selected-value"></view>
+            </view>
         </view>
 
         <view class="slider-value">
             <van-icon bind:tap="handleReset" name="replay" />
         </view>
     </view>
-          <van-slider value="{{sliderValue}}" step="{{sliderStep}}" bind:change="handleSlider" max="{{sliderMax}}" min="{{sliderMin}}" />
 
       <view class="select-type-item">
             <view data-type="horizontal-move" bind:tap="handleSelectType" class="select-type-item-text {{sliderType === 'horizontal-move' ? 'selected' : ''}}">
