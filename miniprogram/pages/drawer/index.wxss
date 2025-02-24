@@ -200,6 +200,37 @@ page{
     align-items: center;
     padding: 20px 12px;
 }
+.slider-left-container{
+    display: flex;
+    justify-content: flex-start;
+    flex: 1;
+}
+.slider-right-container{
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}
+.slider-arrow{
+    margin: 0 4px;
+    padding: 6px;
+    color: #333;
+    background-color: #eee;
+    border-radius: 10px;
+    width: 30px;
+    height: 30px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.slider-arrow-more .van-icon{
+    width: 10px;
+    margin: 0 -2px;
+    padding-left: 0;
+}
+.slider-arrow-more .first-icon{
+    margin-left: -4px;
+}
 .slider-content{
     flex: 1;
     display: flex;

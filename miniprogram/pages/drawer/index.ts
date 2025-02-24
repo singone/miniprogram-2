@@ -41,7 +41,6 @@ Page({
     sliderMax: 100,
     sliderMin: 0,
     sliderStep: 1,
-    halfSliderComWidth: 0,
   },
   computed: {
     sliderList(data: {sliderMax: number, sliderMin: number, sliderStep: number}) {
@@ -508,6 +507,9 @@ Page({
   },
   dealSlider(){
     const {sliderType} = this.data;
+    if (!sliderType) {
+      return;
+    }
     switch(sliderType){
     
       case 'vertical-move':
@@ -564,7 +566,7 @@ Page({
         break;
     }
     this.drawImg();
-  },  
+  }, 
   dealRotate(){
     const {sliderValue, selectType, defaultSliderValue} = this.data;
     const changeNum = sliderValue - defaultSliderValue;
@@ -630,6 +632,49 @@ Page({
     });
     this.initSlider();
   },
+
+  handleSliderLeftMore(){
+    const sliderValue = this.data.sliderValue - this.data.sliderStep * 10;  
+    if (sliderValue < this.data.sliderMin) {
+      return;
+    }
+    this.setData({
+      sliderValue,
+    });
+    this.dealSlider();
+  },
+  handleSliderRightMore(){
+    console.log(this.data.sliderValue, this.data.sliderStep);
+    const sliderValue = this.data.sliderValue + this.data.sliderStep * 10;
+    if (sliderValue > this.data.sliderMax) {
+      return;
+    }
+    this.setData({
+      sliderValue,
+    });
+    this.dealSlider();
+  },
+  handleSliderLeft(){
+    const sliderValue = this.data.sliderValue - this.data.sliderStep;
+    if (sliderValue < this.data.sliderMin) {
+      return;
+    }
+    this.setData({
+      sliderValue,
+    });
+    this.dealSlider();
+  },
+  handleSliderRight(){
+    const sliderValue = this.data.sliderValue + this.data.sliderStep;
+    if (sliderValue > this.data.sliderMax) {
+      return;
+    }
+    this.setData({
+      sliderValue,
+    });
+    this.dealSlider();
+  },
+  
   initSlider(){
     const {sliderType} = this.data;
     switch(sliderType){
@@ -654,7 +699,6 @@ Page({
   },
   sliderInitHorizontalMove(){
     const { selectType } = this.data;
-    let defaultSliderValue = 1;
     let sliderStep = 1;
     let sliderMax = this.currentInfo.maxWidth;
     let sliderMin = -this.currentInfo.maxWidth;
@@ -664,30 +708,24 @@ Page({
           x1: this.currentInfo.line.x1,
           x2: this.currentInfo.line.x2,
         };
-        defaultSliderValue = Math.round((this.currentInfo.line.x2 - this.currentInfo.line.x1) / 2);
         break;
       case 'ellipse':
         this.defaultValue = {
           cx: this.currentInfo.ellipse.cx,
           cy: this.currentInfo.ellipse.cy,
         };
-        defaultSliderValue = this.currentInfo.ellipse.cx;
         break;
       default:
         this.defaultValue = {
           x: this.currentInfo.x,
           y: this.currentInfo.y,
         };
-        defaultSliderValue = this.currentInfo.x;
         break;
     }
     this.setData({
       sliderStep,
-      defaultSliderValue,
       sliderMax,
       sliderMin,
-      
-      sliderValue: defaultSliderValue,
     });
   },
   sliderInitVerticalMove(){
@@ -702,30 +740,25 @@ Page({
           y1: this.currentInfo.line.y1,
           y2: this.currentInfo.line.y2,
         };
-        defaultSliderValue = Math.round((this.currentInfo.line.y2 - this.currentInfo.line.y1) / 2);
         break;
       case 'ellipse':
         this.defaultValue = {
           cy: this.currentInfo.ellipse.cy,
           ry: this.currentInfo.ellipse.ry,
         };
-        defaultSliderValue = Math.round(this.currentInfo.ellipse.cy);
         break;
       default:
         this.defaultValue = {
           x: this.currentInfo.x,
           y: this.currentInfo.y,
         };
-        defaultSliderValue = Math.round(this.currentInfo.y);
         break;
 
     }
     this.setData({
       sliderStep,
-      defaultSliderValue,
       sliderMax,
       sliderMin,
-      sliderValue: defaultSliderValue,
     }); 
   },
   sliderInitRotate(){
@@ -735,7 +768,6 @@ Page({
     switch(selectType){
       case 'line':
         console.log(this.currentInfo.line);
-        defaultSliderValue = Math.round(transformAngle(getAngle(this.currentInfo.line.x1, this.currentInfo.line.y1, this.currentInfo.line.x2, this.currentInfo.line.y2)));
         this.defaultValue = {
           rotation: defaultSliderValue,
           x1: this.currentInfo.line.x1,
@@ -748,7 +780,6 @@ Page({
         };
         break;
       default:
-        defaultSliderValue = Math.round(transformAngle(this.currentInfo.img.rotation));
 
         this.defaultValue = {
           rotation: defaultSliderValue,
@@ -757,7 +788,6 @@ Page({
     }
     this.setData({
       sliderStep: 1,
-      defaultSliderValue,
       sliderMax: 90,
       sliderMin: -90,
       sliderValue: 0,
@@ -1097,14 +1127,7 @@ Page({
   onShow() {
     this.drawCom = this.selectComponent('#draw-com');
     
-    this.sliderCom = wx.createSelectorQuery().select('#slider-content');
-    this.sliderCom.boundingClientRect((res) => {
-      console.log(res);
-      this.setData({
-        halfSliderComWidth: Math.floor(res.width / 2),
-      });
-    }).exec()
-    this.sliderSelectedCom = wx.createSelectorQuery().select('#slider-item-selected');
+
     this.initChart();
   },
 

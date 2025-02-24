@@ -48,35 +48,23 @@
         <text class="test-value" wx:else>浓度：{{concentration}}mol/L</text>
     </view>
     <view class="slider-container">
-        <view class="slider-content" id="slider-content"> 
-            <scroll-view class="slider-content_scroll"
-               show-scrollbar="{{false}}" 
-               bind:scroll="handleScrollSlider" 
-               scroll-with-animation="{{true}}"
-               wx:if="{{halfSliderComWidth && sliderList.length > 0}}"
-               scroll-into-view-offset="{{-halfSliderComWidth - 1}}"
-               scroll-into-view="slider-item-value-{{sliderValue}}"
-               enable-flex="{{true}}"
-                scroll-x="{{true}}"
-                 scroll-y="{{false}}" 
-                 style="height:30px;"
-            >
-                <view style="width: {{halfSliderComWidth}}px;" id="slider-item-value-null" class="slider-item-left slider-item-space"></view>
-                <view class="slider-item" wx:for="{{sliderList}}" id="slider-item-value-{{index * sliderStep + sliderMin }}" wx:key="index">
-                    <view class="slider-item-value {{index % 5 === 0 ? 'slider-item-value-total' : ''}}"></view>
-                </view>
-                <view style="width: {{halfSliderComWidth}}px;" class="slider-item-right slider-item-space"></view>
-
-            </scroll-view>
-            <view class="slider-item-selected" id="slider-item-selected">
-                <view class="slider-item-selected-value"></view>
+        <view class="slider-left-container">
+          <view class="slider-arrow slider-arrow-more" bind:tap="handleSliderLeftMore">
+                <van-icon class="first-icon" name="arrow-left" />
+                <van-icon name="arrow-left" />
             </view>
-            <view class="slider-item-selected-value-text">{{showSliderValue}}</view>
-
+            <view class="slider-arrow" bind:tap="handleSliderLeft">
+                <van-icon name="arrow-left" />
+            </view>
         </view>
-
-        <view class="slider-value">
-            <van-icon bind:tap="handleReset" name="replay" />
+        <view class="slider-right-container">          
+            <view class="slider-arrow" bind:tap="handleSliderRight">
+                <van-icon name="arrow" />
+            </view>
+            <view class="slider-arrow slider-arrow-more" bind:tap="handleSliderRightMore">
+                <van-icon class="first-icon" name="arrow" />
+                <van-icon name="arrow" />
+            </view>
         </view>
     </view>
 
