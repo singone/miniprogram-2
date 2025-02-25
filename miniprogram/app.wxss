@@ -31,3 +31,7 @@ page{
   border: 2px solid #0c0d0d;
   box-shadow: none;
 }
+
+.hover-class{
+  opacity: 0.8;
+}

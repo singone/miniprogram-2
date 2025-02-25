@@ -4,6 +4,7 @@ import { behavior as computedBehavior  } from '../../utils/miniprogram-computed'
 import * as echarts from '../../components/ec-canvas/echarts.min.js';
 import { ELLIPSE_ID, getDrawerData, LINE_ID, GROUP_ID, IMAGE_ID, getAngle, getWidth, RECT_ID, transformAngleToRadian, transformAngle } from "./utils";
 import Touch from '../../utils/touch';
+import { callRecognizeLocalPicture } from "../../utils/client";
 
 console.log(computedBehavior);
 Page({
@@ -117,6 +118,8 @@ Page({
       cy: 0,
       rx: 0,
       ry: 0,
+      scale: 1,
+      rotation: 0,
     },
   },
   handleSelect(e){
@@ -142,6 +145,28 @@ Page({
     x2: 0,
     y2: 0,
   },
+  getDrawBoundary(type: string) {
+    if (type === 'line') {
+      return {
+        maxX: Math.max(0, this.drawInfo.width - this.currentInfo.img.width * this.scale),
+        maxY: Math.max(0, this.drawInfo.height - this.currentInfo.img.height * this.scale),
+        minX: Math.min(0, this.currentInfo.img.width * this.scale),
+        minY: Math.min(0, this.currentInfo.img.height * this.scale),
+      };
+    }
+    if (type === 'ellipse') {
+      return {
+        maxX: this.currentInfo.img.showWidth - this.currentInfo.ellipse.rx,
+        maxY: this.currentInfo.img.showHeight - this.currentInfo.ellipse.ry,
+      };
+    } 
+    return {
+      maxX: Math.max(0, this.drawInfo.width - this.currentInfo.img.width * this.scale),
+      maxY: Math.max(0, this.drawInfo.height - this.currentInfo.img.height * this.scale),
+      minX: Math.min(0, this.currentInfo.img.width * this.scale),
+      minY: Math.min(0, this.currentInfo.img.height * this.scale),
+    };
+  },
   initChart() {
     if (this.chart) {
       return;
@@ -158,6 +183,7 @@ Page({
       let moveId: string | null = null;
       let startX = 0;
       let startY = 0;
+      let scale = 1;
       new Touch(this, 'touch', {
         tap: (e) => {
           console.log(e, 'tap');
@@ -173,8 +199,12 @@ Page({
         multipointStart: (e) => {
           console.log(e, 'multipointStart');
           multipointStart = true;
-          startX = e.centerX;
-          startY = e.centerY;
+          if ($page.currentInfo.selectType === 'ellipse') {
+            scale = this.currentInfo.ellipse.scale || 1;
+            return;
+          } else {
+            scale = this.scale;
+          }
         },
         multipointEnd: (e) => {
           console.log(e, 'multipointEnd');
@@ -185,25 +215,34 @@ Page({
             return;
           }
           console.log(e.singleZoom, 'zoom');
-          $page.scale = e.zoom;
+     
         
+          const boundary = $page.getDrawBoundary($page.currentInfo.selectType);
+          if ($page.currentInfo.selectType === 'ellipse') {
+            console.log(e.singleZoom, scale, 'zoom');
+            $page.currentInfo.ellipse.scale = e.singleZoom * scale;
+            this.drawImg();
+            return;
+          } else {
+            $page.scale = e.singleZoom * scale;
+          }
           const deltaX = e.centerX - startX;
           const deltaY = e.centerY - startY;
 
           $page.currentInfo.x = $page.currentInfo.x + deltaX;
-          if ($page.currentInfo.x > $page.currentInfo.maxWidth) {
-            $page.currentInfo.x = $page.currentInfo.maxWidth;
+          if ($page.currentInfo.x > boundary.maxX) {
+            $page.currentInfo.x = boundary.maxX;
           }
-          if ($page.currentInfo.x < -$page.currentInfo.maxWidth) {
-            $page.currentInfo.x = -$page.currentInfo.maxWidth;
+          if ($page.currentInfo.x < boundary.minX) {
+            $page.currentInfo.x = boundary.minX;
           }
           $page.currentInfo.y = $page.currentInfo.y + deltaY;
 
-          if ($page.currentInfo.y > $page.currentInfo.maxHeight) {
-            $page.currentInfo.y = $page.currentInfo.maxHeight;
+          if ($page.currentInfo.y > boundary.maxY) {
+            $page.currentInfo.y = boundary.maxY;
           }
-          if ($page.currentInfo.y < -$page.currentInfo.maxHeight) {
-            $page.currentInfo.y = -$page.currentInfo.maxHeight;
+          if ($page.currentInfo.y < boundary.minY) {
+            $page.currentInfo.y = boundary.minY;
           }
           startX = e.centerX;
           startY = e.centerY;
@@ -324,24 +363,33 @@ Page({
         })
         if (targetId === RECT_ID + '_close' || !targetId) {
           $page.currentInfo.selectType = '';
-      
+          $page.setData({
+            selectType: '',
+          })
           $page.drawImg();
           return;
         }
         if (targetId.includes('ellipse')) {
           $page.currentInfo.selectType = 'ellipse';
-         
+          $page.setData({
+            selectType: 'ellipse',
+          })
           $page.drawImg();
           return;
         }
         if (targetId.includes('line')) {
           $page.currentInfo.selectType = 'line';
-    
+          $page.setData({
+            selectType: 'line',
+          })
           $page.drawImg();
           return;
         }
         if (targetId.includes('image')) {
           $page.currentInfo.selectType = 'image'; 
+          $page.setData({
+            selectType: 'image',
+          })
           $page.drawImg();
           return;
         }
@@ -374,41 +422,56 @@ Page({
     }
   
     console.log(fileData);
-    if (!isTest && fileData[currentUrl.tempFilePath]) {
-      this.currentInfo = fileData[currentUrl.tempFilePath];
-      const getImgSize = (img) => {
+    // if (!isTest && fileData[currentUrl.tempFilePath]) {
+    //   this.currentInfo = fileData[currentUrl.tempFilePath];
+    //   const getImgSize = (img) => {
 
-        let imgWidth = this.drawInfo.width;
-        let imgHeight = img.height * this.drawInfo.width / img.width;
-        if (imgHeight > this.drawInfo.height) {
-          imgHeight = this.drawInfo.height;
-          imgWidth = img.width * this.drawInfo.height / img.height;
-        }
-        return  {
-          showWidth: imgWidth,
-          showHeight: imgHeight,
-        };
-      }
-      this.currentInfo.img = {
-        ...this.currentInfo.img,
-        ...getImgSize(this.currentInfo.img),
-      };
-      this.currentInfo.line = {
-        ...this.currentInfo.line,
-        x1: 10,
-        x2: this.drawInfo.width - 20,
-      };
-      this.drawImg();
-      return;
-    }
+    //     let imgWidth = this.drawInfo.width;
+    //     let imgHeight = img.height * this.drawInfo.width / img.width;
+    //     if (imgHeight > this.drawInfo.height) {
+    //       imgHeight = this.drawInfo.height;
+    //       imgWidth = img.width * this.drawInfo.height / img.height;
+    //     }
+    //     return  {
+    //       showWidth: imgWidth,
+    //       showHeight: imgHeight,
+    //     };
+    //   }
+    //   this.currentInfo.img = {
+    //     ...this.currentInfo.img,
+    //     ...getImgSize(this.currentInfo.img),
+    //   };
+    //   this.currentInfo.line = {
+    //     ...this.currentInfo.line,
+    //     x1: 10,
+    //     x2: this.drawInfo.width - 20,
+    //   };
+    //   this.drawImg();
+    //   return;
+    // }
       wx.getImageInfo({
         src: currentUrl.tempFilePath,
-        success: (res) => {
+        success: async (res) => {
         console.log(res);
-        const widthScale = this.drawInfo.width / res.width;
-        const heightScale = this.drawInfo.height / res.height;
-        const imgScale = widthScale < heightScale ? widthScale : heightScale;
-        
+        wx.showLoading({
+          title: '图片识别中',
+        });
+        let result = null;
+        try {
+         result = await callRecognizeLocalPicture(currentUrl.tempFilePath);
+        }catch(e){
+          console.log(e);
+          wx.hideLoading();
+
+        }
+        const location = result ? result.Data.location : null;
+        console.log(location);
+        wx.hideLoading();
+        console.log(result);
+          const widthScale = this.drawInfo.width / res.width;
+          const heightScale = this.drawInfo.height / res.height;
+          const imgScale = widthScale < heightScale ? widthScale : heightScale;
+          
         let imgWidth = this.drawInfo.width;
         let imgHeight = res.height * widthScale;
         if (imgHeight > this.drawInfo.height) {
@@ -439,7 +502,7 @@ Page({
           },
           line: {
             x1: 10,
-            y1: res.height * imgScale * 0.55,
+            y1: res.height * imgScale * 0.50,
             x2: this.drawInfo.width - 20,
             y2: res.height * imgScale * 0.50,
             rotation: 0,

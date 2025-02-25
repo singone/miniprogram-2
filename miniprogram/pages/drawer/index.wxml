@@ -67,7 +67,6 @@
             </view>
         </view>
     </view>
-
       <view class="select-type-item">
             <view data-type="horizontal-move" bind:tap="handleSelectType" class="select-type-item-text {{sliderType === 'horizontal-move' ? 'selected' : ''}}">
                 <image class="select-type-item-img" wx:if="{{sliderType === 'horizontal-move'}}" src="/images/icon-leftMove-selected.png" />

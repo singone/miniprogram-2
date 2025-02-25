@@ -41,7 +41,7 @@ export const getAngle = (x1: number, y1: number, x2: number, y2: number) => {
 // 计算直线和椭圆的交点
 // line ax + by + c = 0
 export function findIntersection(ellipse, line) {
-  const { cx, cy, rx, ry } = ellipse;
+  const { cx, cy, rx, ry, rotation } = ellipse;
   const { x1, y1, x2, y2 } = line;
   // 计算直线斜率和截距
   let k, b;
@@ -165,9 +165,14 @@ export function getDrawerData(
   scale,
   options?: Record<string, any>
 ) {
-  const selectedColor = "#ee0a24";
-  const normalColor = "#909399";
-  const intersections = findIntersection(currentInfo.ellipse, currentInfo.line);
+  const ellipse = {
+    cx: currentInfo.ellipse.cx,
+    cy: currentInfo.ellipse.cy,
+    rx: currentInfo.ellipse.rx * (currentInfo.ellipse.scale || 1),
+    ry: currentInfo.ellipse.ry * (currentInfo.ellipse.scale || 1),
+    rotation: currentInfo.ellipse.rotation,
+  };
+  const intersections = findIntersection(ellipse, currentInfo.line);
   // 获取直线的斜率
   const m1 = getLineSlope(
     currentInfo.line.x1,
@@ -185,18 +190,18 @@ export function getDrawerData(
         invisible: true,
       };
     }
-    const m2 = tangentSlope(currentInfo.ellipse, p.x, p.y);
+    const m2 = tangentSlope(ellipse, p.x, p.y);
     let angle = calculateAngle(m1, m2);
     let isClockwise = true;
     if (angle < 0) {
-      if (p.x < currentInfo.ellipse.cx) {
+      if (p.x < ellipse.cx) {
         angle = -angle;
       } else {
         angle = Math.PI + angle;
       }
       isClockwise = false;
     } else {
-      if (p.x < currentInfo.ellipse.cx) {
+      if (p.x < ellipse.cx) {
         angle = Math.PI - angle;
       }
       isClockwise = true;
@@ -241,7 +246,7 @@ export function getDrawerData(
         invisible: true,
       };
     }
-    const m2 = tangentSlope(currentInfo.ellipse, p.x, p.y);
+    const m2 = tangentSlope(ellipse, p.x, p.y);
     const angle = calculateAngle(m1, m2);
 
     // 计算切线终点（假设在一定范围内，比如长度为 3）
@@ -276,10 +281,10 @@ export function getDrawerData(
   let tools = {};
   if (currentInfo.selectType === "ellipse") {
     tools = {
-      x: currentInfo.ellipse.cx - currentInfo.ellipse.rx - 3,
-      y: currentInfo.ellipse.cy - currentInfo.ellipse.ry - 3,
-      width: currentInfo.ellipse.rx * 2 + 6,
-      height: currentInfo.ellipse.ry * 2 + 6,
+      x: ellipse.cx - ellipse.rx - 3,
+      y: ellipse.cy - ellipse.ry - 3,
+      width: ellipse.rx * 2 + 6,
+      height: ellipse.ry * 2 + 6,
     };
   } else if (currentInfo.selectType === "line") {
     tools = {
@@ -340,15 +345,15 @@ export function getDrawerData(
             {
               type: "ellipse",
               id: ELLIPSE_ID,
-              x: currentInfo.ellipse.cx - currentInfo.ellipse.rx,
-              y: currentInfo.ellipse.cy - currentInfo.ellipse.ry,
-              originX: currentInfo.ellipse.rx,
-              originY: currentInfo.ellipse.ry,
+              x: ellipse.cx - ellipse.rx,
+              y: ellipse.cy - ellipse.ry,
+              originX: ellipse.rx,
+              originY: ellipse.ry,
               shape: {
-                cx: currentInfo.ellipse.rx, // 椭圆中心的 x 坐标
-                cy: currentInfo.ellipse.ry, // 椭圆中心的 y 坐标
-                rx: currentInfo.ellipse.rx, // 椭圆的 x 轴半径
-                ry: currentInfo.ellipse.ry, // 椭圆的 y 轴半径
+                cx: ellipse.rx, // 椭圆中心的 x 坐标
+                cy: ellipse.ry, // 椭圆中心的 y 坐标
+                rx: ellipse.rx, // 椭圆的 x 轴半径
+                ry: ellipse.ry, // 椭圆的 y 轴半径
               },
               style: {
                 fill: "transparent", // 填充颜色
@@ -449,31 +454,41 @@ export function getDrawerData(
                         },
                       },
                       {
-                        type: "image",
+                        type: "circle",
                         $action: "replace",
                         id: RECT_ID + "_rotate_left",
-                        x: currentInfo.line.x1 - tools.x - 6,
-                        y: currentInfo.line.y1 - tools.y - 6,
+                        x: 0,
+                        y: 0,
                         originX: 0,
                         originY: 0,
+                        shape: {  
+                          cx: currentInfo.line.x1 - tools.x,
+                          cy: currentInfo.line.y1 - tools.y,
+                          r: 6,
+                        },
                         style: {
-                          image: "/images/icon-pic-rotate.png",
-                          width: 12,
-                          height: 12,
+                          fill: "#3173FA",
+                          stroke: "#efefef",
+                          lineWidth: 2,
                         },
                       },
                       {
-                        type: "image",
+                        type: "circle",
                         $action: "replace",
                         id: RECT_ID + "_rotate_right",
-                        x: currentInfo.line.x2 - 6,
-                        y: currentInfo.line.y2 - 6,
+                        x: 0,
+                        y: 0,
                         originX: 0,
                         originY: 0,
+                        shape: {
+                          cx: currentInfo.line.x2,
+                          cy: currentInfo.line.y2,
+                          r: 6,
+                        },
                         style: {
-                          image: "/images/icon-pic-rotate.png",
-                          width: 12,
-                          height: 12,
+                          fill: "#3173FA",
+                          stroke: "#efefef",
+                          lineWidth: 2,
                         },
                       },
                     ]
