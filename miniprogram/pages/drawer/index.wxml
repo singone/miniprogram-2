@@ -1,5 +1,5 @@
 <!--pages/drawer/index.wxml-->
-<van-nav-bar title="{{isTest ? '测量浓度' : '画布'}}" bind:click-left="handleBack" left-arrow="{{true}}" />
+<van-nav-bar title="{{isTest ? '测量浓度' : '识别界面'}}" bind:click-left="handleBack" left-arrow="{{true}}" />
 <block wx:if="{{files && !isTest}}">
  <scroll-view 
     enable-flex
@@ -44,8 +44,8 @@
         <text wx:if="{{isTest}}">公式：{{linear.expression}};</text>
 
         <text>平均接触角：{{angle ||'--'}}°;</text>
-        <text wx:if="{{!isTest}}">浓度：<text>{{fileData[files[selectedIndex].tempFilePath].concentration ||'--'}}mol/L;</text></text>
-        <text class="test-value" wx:else>浓度：{{concentration}}mol/L</text>
+        <text wx:if="{{!isTest}}">浓度：<text>{{fileData[files[selectedIndex].tempFilePath].concentration ||'--'}}µmol/L;</text></text>
+        <text class="test-value" wx:else>浓度：{{concentration}}µmol/L</text>
     </view>
     <view class="slider-container">
         <view class="slider-left-container">
@@ -143,7 +143,7 @@
             class="btn"
             wx:if="{{fileData[files[selectedIndex].tempFilePath].concentration}}"
             bind:tap="handleChangeConcentration">
-                修改浓度({{fileData[files[selectedIndex].tempFilePath].concentration}}mol/L)
+                修改浓度({{fileData[files[selectedIndex].tempFilePath].concentration}}µmol/L)
             </van-button>
             <van-button type="danger" class="btn" wx:else bind:tap="handleChangeConcentration">
                 填写浓度

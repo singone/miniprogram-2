@@ -12,6 +12,9 @@ Page({
     this.setData({
       files: store.files || [],
     })
+    wx.showShareMenu({
+      menus: ['shareAppMessage', 'shareTimeline'],
+    })
   },
   handleSelect() {
     wx.chooseMedia({

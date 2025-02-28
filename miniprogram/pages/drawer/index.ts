@@ -286,6 +286,11 @@ Page({
             if (moveId === RECT_ID + '_rect') {
               this.currentInfo.ellipse.cx = this.currentInfo.ellipse.cx + e.deltaX;
               this.currentInfo.ellipse.cy = this.currentInfo.ellipse.cy + e.deltaY;
+            } else if (moveId === RECT_ID + '_rotate_left') {
+              this.currentInfo.ellipse.cx = this.currentInfo.ellipse.cx + e.deltaX / 2;
+              this.currentInfo.ellipse.cy = this.currentInfo.ellipse.cy + e.deltaY / 2;
+              this.currentInfo.ellipse.rx = this.currentInfo.ellipse.rx - e.deltaX / 2;
+              this.currentInfo.ellipse.ry = this.currentInfo.ellipse.ry - e.deltaY / 2;
             } else if (moveId === RECT_ID + '_rotate') {
               this.currentInfo.ellipse.cx = this.currentInfo.ellipse.cx + e.deltaX / 2;
               this.currentInfo.ellipse.cy = this.currentInfo.ellipse.cy + e.deltaY / 2;
@@ -422,33 +427,12 @@ Page({
     }
   
     console.log(fileData);
-    // if (!isTest && fileData[currentUrl.tempFilePath]) {
-    //   this.currentInfo = fileData[currentUrl.tempFilePath];
-    //   const getImgSize = (img) => {
+    if (!isTest && fileData[currentUrl.tempFilePath]) {
+      this.currentInfo = fileData[currentUrl.tempFilePath];
 
-    //     let imgWidth = this.drawInfo.width;
-    //     let imgHeight = img.height * this.drawInfo.width / img.width;
-    //     if (imgHeight > this.drawInfo.height) {
-    //       imgHeight = this.drawInfo.height;
-    //       imgWidth = img.width * this.drawInfo.height / img.height;
-    //     }
-    //     return  {
-    //       showWidth: imgWidth,
-    //       showHeight: imgHeight,
-    //     };
-    //   }
-    //   this.currentInfo.img = {
-    //     ...this.currentInfo.img,
-    //     ...getImgSize(this.currentInfo.img),
-    //   };
-    //   this.currentInfo.line = {
-    //     ...this.currentInfo.line,
-    //     x1: 10,
-    //     x2: this.drawInfo.width - 20,
-    //   };
-    //   this.drawImg();
-    //   return;
-    // }
+      this.drawImg();
+      return;
+    }
       wx.getImageInfo({
         src: currentUrl.tempFilePath,
         success: async (res) => {
@@ -464,7 +448,7 @@ Page({
           wx.hideLoading();
 
         }
-        const location = result ? result.Data.location : null;
+        const location = result && result.Data ? result.Data.Location : null;
         console.log(location);
         wx.hideLoading();
         console.log(result);
@@ -502,18 +486,19 @@ Page({
           },
           line: {
             x1: 10,
-            y1: res.height * imgScale * 0.50,
+            y1: location ? location.Y * imgScale + location.Height * imgScale - 10 : res.height * imgScale * 0.50,
             x2: this.drawInfo.width - 20,
-            y2: res.height * imgScale * 0.50,
+            y2: location ? location.Y * imgScale + location.Height * imgScale - 10 : res.height * imgScale * 0.50,
             rotation: 0,
           },
           ellipse: {
-            cx: this.drawInfo.width / 2,
-            cy: res.height * imgScale * 0.50,
-            rx: 24,
-            ry: 20,
+            cx: location ? location.X * imgScale + location.Width * imgScale / 2 : this.drawInfo.width / 2,
+            cy: location ? location.Y * imgScale + location.Height * imgScale / 2 : res.height * imgScale * 0.50,
+            rx: location ? location.Width * imgScale / 2 : 24,
+            ry: location ? location.Height * imgScale / 2 : 20,
           },
         };
+        console.log(this.currentInfo, location);
         this.drawImg();
       }
     })

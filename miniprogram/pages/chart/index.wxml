@@ -18,7 +18,7 @@
                 </view>
                 <view class="table-list-header-item row-concentration">
                     <text>浓度</text>
-                    <text>mol/L</text>
+                    <text>µmol/L</text>
                 </view>
                 <view class="table-list-header-item row-angle">
                     <text>接触角</text>
@@ -54,7 +54,7 @@
         <van-button type="danger" bindtap="handleSaveChart">保存图表</van-button>
     </view>
     <view class="footer_right">
-        <van-button plain>分享结果</van-button>
+        <van-button plain bind:tap="handleShare">分享结果</van-button>
         <van-button type="primary" bindtap="handleTest">测试浓度</van-button>
     </view>
 </view>

@@ -5,7 +5,7 @@
     "compileHotReLoad": true,
     "skylineRenderEnable": true,
     "lazyloadPlaceholderEnable": true,
-    "urlCheck": false
+    "urlCheck": true
   },
   "condition": {
     "miniprogram": {

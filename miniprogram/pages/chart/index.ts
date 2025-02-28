@@ -1,9 +1,7 @@
 import store from "../../store/index";
 import * as echarts from '../../components/ec-canvas/echarts.min.js';
-import ecStat from 'echarts-stat';
-import { getDrawerData } from "../drawer/utils";
+import { getLinearExpression } from "../drawer/utils";
 
-echarts.registerTransform(ecStat.transform.regression);
 // pages/chart/index.ts
 Page({
 
@@ -97,14 +95,13 @@ Page({
       });
       return;
     }
-    console.log(data, ecStat.regression('linear', data, 1));
-    const linear = ecStat.regression('linear', data, 1);
+    const linear = getLinearExpression(data)  ;
     this.setData({
       linear: linear,
     });
     const option = {
       title: {
-        top: 16,
+        top: 10,
         right: 20,
         text: linear.expression,
         textStyle: {
@@ -121,7 +118,7 @@ Page({
       xAxis: {
         type: 'value',
         show: true,
-        name: '浓度(mol/L)',
+        name: '浓度(µmol/L)',
         nameLocation: 'end',
         nameGap: -60,
         nameTextStyle:{
@@ -202,6 +199,19 @@ Page({
           color: '#3173FA',
         },
       }],
+      backgroundColor: '#fff',
+      graphic: {
+        elements: [{
+          type: 'text',
+          top: 42,
+          right: 20,
+          style: {
+            text: `R²= ${linear.rSquared}`,
+            fontSize: 12,
+            fill: '#FF4500',
+          },
+        }],
+      }
     };
     this.chart.setOption(option);
   },
@@ -245,6 +255,35 @@ Page({
   handleCancel() {
     this.setData({
       showTest: false,
+    })
+  },
+  handleShare() {
+    this.drawCom.canvasToTempFilePath({
+      success: res => {
+        wx.showShareImageMenu({
+          path: res.tempFilePath,
+          success: res => {
+            wx.showToast({
+              title: '分享成功',
+            });
+            console.log(res);
+          },
+          fail: res => {
+            wx.showToast({
+              title: '分享失败',
+              icon: 'none',
+            })
+            console.log(res);
+          }
+        })
+      },
+      fail: res => {
+        wx.showToast({
+          title: '分享失败',
+          icon: 'none',
+        })
+        console.log(res);
+      }
     })
   },
   handleSaveChart() {

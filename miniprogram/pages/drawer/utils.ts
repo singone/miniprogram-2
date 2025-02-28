@@ -299,7 +299,7 @@ export function getDrawerData(
   console.log(currentInfo, tools);
   const option = {
     useCoarsePointer: true,
-    backgroundColor: "transparent",
+    backgroundColor: options?.isTest ? "#fff" : "transparent",
     graphic: {
       elements: [
         {
@@ -509,7 +509,20 @@ export function getDrawerData(
                           lineWidth: 2,
                         },
                       },
-
+                      {
+                        type: "image",
+                        $action: "replace",
+                        id: RECT_ID + "_rotate_left",
+                        x: - 6,
+                        y: - 6,
+                        originX: 0,
+                        originY: 0,
+                        style: {
+                          image: "/images/icon-pic-rotate.png",
+                          width: 12,
+                          height: 12,
+                        },
+                      },
                       {
                         type: "image",
                         $action: "replace",
@@ -552,7 +565,7 @@ export function getDrawerData(
                   fontSize: 12,
                   x: 0,
                   y: 0,
-                  text: `浓度：${options.concentration || '--'}mol/L`,
+                  text: `浓度：${options.concentration || '--'}µmol/L`,
                 },
               },
               {
@@ -580,3 +593,59 @@ export function getDrawerData(
     angle: angleResult,
   };
 }
+
+
+export function getLinearExpression(predata: Array<Array<number>>) {
+  let xDimIdx = 0;
+  let yDimIdx = 1;
+  let sumX = 0;
+  let sumY = 0;
+  let sumXY = 0;
+  let sumXX = 0;
+  let len = predata.length;
+
+  for (let i = 0; i < len; i++) {
+      const rawItem = predata[i];
+      sumX += rawItem[xDimIdx];
+      sumY += rawItem[yDimIdx];
+      sumXY += rawItem[xDimIdx] * rawItem[yDimIdx];
+      sumXX += rawItem[xDimIdx] * rawItem[xDimIdx];
+
+  }
+
+  const gradient = ((len * sumXY) - (sumX * sumY)) / ((len * sumXX) - (sumX * sumX));
+  const intercept = (sumY / len) - ((gradient * sumX) / len);
+
+    // 计算均值 yBar
+    const yBar = sumY / len;
+
+      // 计算拟合值 y_hat
+      const yHat = predata.map((xi) => gradient * xi[xDimIdx] + intercept);
+      let SSres = 0;
+      let SStot = 0;
+      const result = [];
+        // 计算残差平方和 SS_res 和总平方和 SS_tot
+      for (let i = 0; i < len; i++) {
+        const rawItem = predata[i];
+        SSres += (rawItem[yDimIdx] - yHat[i]) ** 2;
+        SStot += (rawItem[yDimIdx] - yBar) ** 2;
+        const resultItem = rawItem.slice();
+        resultItem[xDimIdx] = rawItem[xDimIdx];
+        resultItem[yDimIdx] = gradient * rawItem[xDimIdx] + intercept;
+        result.push(resultItem);
+      }
+    // 计算 R^2
+    const rSquared = 1 - SSres / SStot;
+    const expression = 'y = ' + Math.round(gradient * 100) / 100 + 'x + ' + Math.round(intercept * 100) / 100;
+
+  return {
+      points: result,
+      parameter: {
+          gradient: gradient,
+          intercept: intercept
+      },
+      expression: expression,
+      rSquared: Math.round(rSquared * 10000) / 10000,
+  };
+}
+
